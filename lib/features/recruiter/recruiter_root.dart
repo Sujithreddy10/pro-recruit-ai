@@ -8,9 +8,7 @@ import 'package:pro_recruit_ai/shared/app_design_system.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/scheduler_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/collab_hub_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:pro_recruit_ai/shared/common_widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -1113,7 +1111,6 @@ class _AutonomousIntakeModuleState extends State<AutonomousIntakeModule> {
     ChatMessage(sender: "Agent", text: "Elite Intake Agent Online. Tell me about the role and availability.", isUser: false),
   ];
   bool _isProcessing = false;
-  final String _apiKey = dotenv.get('GEMINI_API_KEY');
 
   Future<void> _sendMessage() async {
     if (_msgCtrl.text.isEmpty || _isProcessing) return;
@@ -1124,9 +1121,20 @@ class _AutonomousIntakeModuleState extends State<AutonomousIntakeModule> {
       _isProcessing = true;
     });
     try {
-      final model = GenerativeModel(model: 'gemini-2.0-flash', apiKey: _apiKey);
-      final response = await model.generateContent([Content.text(userText)]);
-      setState(() => _messages.add(ChatMessage(sender: "Agent", text: response.text ?? "...", isUser: false)));
+      // Calls the Supabase Edge Function 'intake-chat', which holds the
+      // Gemini API key server-side. The key never ships inside the app.
+      final response = await Supabase.instance.client.functions.invoke(
+        'intake-chat',
+        body: {'message': userText},
+      );
+
+      if (response.status != 200) {
+        throw 'Server error (${response.status})';
+      }
+
+      final data = response.data as Map<String, dynamic>;
+      final text = data['text'] as String? ?? "...";
+      setState(() => _messages.add(ChatMessage(sender: "Agent", text: text, isUser: false)));
     } catch (e) {
       setState(() => _messages.add(ChatMessage(sender: "Agent", text: "Error: $e", isUser: false)));
     } finally {
