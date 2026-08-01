@@ -1171,28 +1171,51 @@ class _AutonomousIntakeModuleState extends State<AutonomousIntakeModule> {
         Container(
           padding: EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
+            color: AppColors.surface,
             border: Border(top: BorderSide(color: AppColors.border)),
           ),
           child: Row(children: [
             Expanded(
               child: TextField(
                 controller: _msgCtrl,
-                decoration: const InputDecoration(
+                style: TextStyle(color: AppColors.textPrimary),
+                decoration: InputDecoration(
                   hintText: "Describe the role...",
-                  border: InputBorder.none,
+                  hintStyle: TextStyle(color: AppColors.textMuted),
+                  filled: true,
+                  fillColor: AppColors.surfaceVariant,
+                  border: OutlineInputBorder(
+                    borderRadius: AppBorderRadius.small,
+                    borderSide: BorderSide(color: Colors.teal.withValues(alpha: 0.2)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: AppBorderRadius.small,
+                    borderSide: BorderSide(color: Colors.teal.withValues(alpha: 0.2)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: AppBorderRadius.small,
+                    borderSide: const BorderSide(color: Colors.teal, width: 1.5),
+                  ),
                 ),
               ),
             ),
-            IconButton(
-              icon: _isProcessing
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Icon(Icons.send, color: AppColors.textDark),
-              onPressed: _isProcessing ? null : _sendMessage,
+            SizedBox(width: AppSpacing.sm),
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF0F766E), Colors.teal]),
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: Colors.teal.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+              ),
+              child: IconButton(
+                icon: _isProcessing
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.send, color: Colors.white, size: 20),
+                onPressed: _isProcessing ? null : _sendMessage,
+              ),
             )
           ]),
         )
