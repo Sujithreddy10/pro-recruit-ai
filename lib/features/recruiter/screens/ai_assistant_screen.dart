@@ -165,6 +165,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                 return DropdownButtonFormField<Map<String, dynamic>>(
                   decoration: InputDecoration(border: OutlineInputBorder(borderRadius: AppBorderRadius.small)),
                   value: _selectedJob,
+                  isExpanded: true,
                   items: jobs
                       .map((j) => DropdownMenuItem<Map<String, dynamic>>(
                             value: j,
