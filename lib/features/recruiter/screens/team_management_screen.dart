@@ -13,7 +13,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
   late Future<List<Map<String, dynamic>>> _teamFuture;
   final TextEditingController _inviteEmailCtrl = TextEditingController();
   bool _isInviting = false;
-  String? _removingId;
+  String? _busyId;
 
   static const _accentColors = [
     Color(0xFF2563EB),
@@ -35,7 +35,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
   Future<List<Map<String, dynamic>>> _fetchTeam() async {
     final data = await Supabase.instance.client
         .from('profiles')
-        .select('id, full_name')
+        .select('id, full_name, is_team_admin')
         .eq('user_role', 'recruiter')
         .order('full_name');
     return List<Map<String, dynamic>>.from(data);
@@ -104,7 +104,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
 
     if (confirmed != true) return;
 
-    setState(() => _removingId = member['id']);
+    setState(() => _busyId = member['id']);
     try {
       final response = await Supabase.instance.client.functions.invoke(
         'team-invite',
@@ -129,7 +129,41 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _removingId = null);
+      if (mounted) setState(() => _busyId = null);
+    }
+  }
+
+  Future<void> _toggleAdmin(Map<String, dynamic> member) async {
+    final makeAdmin = member['is_team_admin'] != true;
+    setState(() => _busyId = member['id']);
+    try {
+      final response = await Supabase.instance.client.functions.invoke(
+        'team-invite',
+        body: {'action': 'set_admin', 'userId': member['id'], 'isAdmin': makeAdmin},
+      );
+
+      if (response.status != 200) {
+        final err = (response.data is Map) ? response.data['error'] : 'Server error (${response.status})';
+        throw err.toString();
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(makeAdmin ? "Made ${member['full_name']} an admin" : "Removed admin from ${member['full_name']}"),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+      _refresh();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to update admin status: $e"), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busyId = null);
     }
   }
 
@@ -139,15 +173,15 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.topLarge),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.xl,
-            AppSpacing.lg,
-            AppSpacing.xl,
-            MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
-          ),
-          child: Column(
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.lg,
+          AppSpacing.xl,
+          MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
+        ),
+        child: StatefulBuilder(
+          builder: (ctx, setSheetState) => Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -223,12 +257,6 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF2563EB)),
         elevation: 0,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showInviteDialog,
-        backgroundColor: const Color(0xFF2563EB),
-        icon: const Icon(Icons.person_add_alt_1, color: Colors.white),
-        label: Text("Invite", style: AppTypography.bodyMediumBold.copyWith(color: Colors.white)),
-      ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _teamFuture,
         builder: (context, snapshot) {
@@ -239,107 +267,170 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
             return Center(child: Text("Error: ${snapshot.error}", style: AppTypography.bodyMedium));
           }
           final team = snapshot.data ?? [];
+          final me = team.where((m) => m['id'] == myId).toList();
+          final isAdmin = me.isNotEmpty && me.first['is_team_admin'] == true;
 
-          return ListView(
-            padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 100),
+          return Stack(
             children: [
-              Container(
-                padding: EdgeInsets.all(AppSpacing.xl),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: AppBorderRadius.large,
-                  boxShadow: [BoxShadow(color: const Color(0xFF2563EB).withValues(alpha: 0.3), blurRadius: 22, offset: const Offset(0, 10))],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.groups, color: Colors.white, size: 32),
-                    SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("YOUR RECRUITING TEAM", style: AppTypography.sectionHeader.copyWith(color: Colors.white70, letterSpacing: 1.5)),
-                          SizedBox(height: AppSpacing.xs),
-                          Text("${team.length} ${team.length == 1 ? 'member' : 'members'}", style: AppTypography.headlineLarge.copyWith(color: Colors.white, fontSize: 22)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: AppSpacing.xl),
-              if (team.isEmpty)
-                Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(AppSpacing.xxl),
-                    child: Text("No teammates yet. Invite your first one!", style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
-                  ),
-                )
-              else
-                ...team.asMap().entries.map((entry) {
-                  final member = entry.value;
-                  final color = _accentColors[entry.key % _accentColors.length];
-                  final name = member['full_name'] ?? 'Recruiter';
-                  final isMe = member['id'] == myId;
-                  final isRemoving = _removingId == member['id'];
-
-                  return Container(
-                    margin: EdgeInsets.only(bottom: AppSpacing.md),
-                    padding: EdgeInsets.all(AppSpacing.lg),
+              ListView(
+                padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, isAdmin ? 100 : AppSpacing.lg),
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(AppSpacing.xl),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: AppBorderRadius.medium,
-                      border: Border.all(color: color.withValues(alpha: 0.15)),
-                      boxShadow: [BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 14, offset: const Offset(0, 6))],
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: AppBorderRadius.large,
+                      boxShadow: [BoxShadow(color: const Color(0xFF2563EB).withValues(alpha: 0.3), blurRadius: 22, offset: const Offset(0, 10))],
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 22,
-                          backgroundColor: color.withValues(alpha: 0.12),
-                          child: Text(
-                            name.isNotEmpty ? name[0].toUpperCase() : '?',
-                            style: AppTypography.bodyMediumBold.copyWith(color: color),
-                          ),
-                        ),
+                        const Icon(Icons.groups, color: Colors.white, size: 32),
                         SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Text(name, style: AppTypography.bodyMediumBold),
-                                  if (isMe) ...[
-                                    SizedBox(width: AppSpacing.xs),
-                                    Container(
-                                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
-                                      decoration: AppDecorations.pill(color),
-                                      child: Text("YOU", style: AppTypography.captionBold.copyWith(color: color, fontSize: 9)),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              Text("Recruiter", style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
+                              Text("YOUR RECRUITING TEAM", style: AppTypography.sectionHeader.copyWith(color: Colors.white70, letterSpacing: 1.5)),
+                              SizedBox(height: AppSpacing.xs),
+                              Text("${team.length} ${team.length == 1 ? 'member' : 'members'}", style: AppTypography.headlineLarge.copyWith(color: Colors.white, fontSize: 22)),
                             ],
                           ),
                         ),
-                        if (!isMe)
-                          isRemoving
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                              : IconButton(
-                                  icon: Icon(Icons.person_remove_outlined, color: AppColors.error, size: 20),
-                                  onPressed: () => _confirmRemove(member),
-                                  tooltip: "Remove from team",
-                                ),
                       ],
                     ),
-                  );
-                }),
+                  ),
+                  if (!isAdmin) ...[
+                    SizedBox(height: AppSpacing.md),
+                    Container(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.08),
+                        borderRadius: AppBorderRadius.medium,
+                        border: Border.all(color: AppColors.warning.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(children: [
+                        Icon(Icons.info_outline, color: AppColors.warning, size: 18),
+                        SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            "Only team admins can invite or remove members. Ask an admin to promote you if you need access.",
+                            style: AppTypography.caption.copyWith(color: AppColors.warning),
+                          ),
+                        ),
+                      ]),
+                    ),
+                  ],
+                  SizedBox(height: AppSpacing.xl),
+                  if (team.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSpacing.xxl),
+                        child: Text("No teammates yet.", style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
+                      ),
+                    )
+                  else
+                    ...team.asMap().entries.map((entry) {
+                      final member = entry.value;
+                      final color = _accentColors[entry.key % _accentColors.length];
+                      final name = member['full_name'] ?? 'Recruiter';
+                      final isMe = member['id'] == myId;
+                      final memberIsAdmin = member['is_team_admin'] == true;
+                      final isBusy = _busyId == member['id'];
+
+                      return Container(
+                        margin: EdgeInsets.only(bottom: AppSpacing.md),
+                        padding: EdgeInsets.all(AppSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: AppBorderRadius.medium,
+                          border: Border.all(color: color.withValues(alpha: 0.15)),
+                          boxShadow: [BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 14, offset: const Offset(0, 6))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 22,
+                                  backgroundColor: color.withValues(alpha: 0.12),
+                                  child: Text(
+                                    name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                    style: AppTypography.bodyMediumBold.copyWith(color: color),
+                                  ),
+                                ),
+                                SizedBox(width: AppSpacing.md),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Wrap(
+                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        spacing: AppSpacing.xs,
+                                        children: [
+                                          Text(name, style: AppTypography.bodyMediumBold),
+                                          if (isMe)
+                                            Container(
+                                              padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+                                              decoration: AppDecorations.pill(color),
+                                              child: Text("YOU", style: AppTypography.captionBold.copyWith(color: color, fontSize: 9)),
+                                            ),
+                                          if (memberIsAdmin)
+                                            Container(
+                                              padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+                                              decoration: AppDecorations.pill(AppColors.accentAmber),
+                                              child: Text("ADMIN", style: AppTypography.captionBold.copyWith(color: AppColors.accentAmber, fontSize: 9)),
+                                            ),
+                                        ],
+                                      ),
+                                      Text("Recruiter", style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
+                                    ],
+                                  ),
+                                ),
+                                if (isAdmin && !isMe)
+                                  isBusy
+                                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                      : IconButton(
+                                          icon: Icon(Icons.person_remove_outlined, color: AppColors.error, size: 20),
+                                          onPressed: () => _confirmRemove(member),
+                                          tooltip: "Remove from team",
+                                        ),
+                              ],
+                            ),
+                            if (isAdmin && !isMe) ...[
+                              SizedBox(height: AppSpacing.sm),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: isBusy ? null : () => _toggleAdmin(member),
+                                  child: Text(
+                                    memberIsAdmin ? "Revoke Admin" : "Make Admin",
+                                    style: AppTypography.captionBold.copyWith(color: color),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    }),
+                ],
+              ),
+              if (isAdmin)
+                Positioned(
+                  bottom: AppSpacing.lg,
+                  right: AppSpacing.lg,
+                  child: FloatingActionButton.extended(
+                    onPressed: _showInviteDialog,
+                    backgroundColor: const Color(0xFF2563EB),
+                    icon: const Icon(Icons.person_add_alt_1, color: Colors.white),
+                    label: Text("Invite", style: AppTypography.bodyMediumBold.copyWith(color: Colors.white)),
+                  ),
+                ),
             ],
           );
         },

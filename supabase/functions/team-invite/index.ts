@@ -3,7 +3,8 @@
 // Admin-only team management actions: invite a new recruiter by email,
 // or remove an existing recruiter. Uses the service role key server-side
 // since these are privileged Supabase Auth Admin operations that must
-// never run with a client-exposed key.
+// never run with a client-exposed key. Only recruiters with
+// is_team_admin = true may perform these actions.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -30,8 +31,8 @@ serve(async (req) => {
       });
     }
 
-    // Verify the caller is authenticated and is themselves a recruiter
-    // before allowing any team-management action.
+    // Verify the caller is authenticated and is an admin recruiter before
+    // allowing any team-management action.
     const authHeader = req.headers.get("Authorization") ?? "";
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -48,13 +49,13 @@ serve(async (req) => {
 
     const { data: callerProfile } = await adminClient
       .from("profiles")
-      .select("user_role")
+      .select("user_role, is_team_admin")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (callerProfile?.user_role !== "recruiter") {
+    if (callerProfile?.user_role !== "recruiter" || callerProfile?.is_team_admin !== true) {
       return new Response(
-        JSON.stringify({ error: "Only recruiters can manage the team" }),
+        JSON.stringify({ error: "Only team admins can manage the team" }),
         {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -88,9 +89,12 @@ serve(async (req) => {
 
       const invitedId = inviteData.user?.id;
       if (invitedId) {
+        // New invitees are recruiters but NOT admins by default -
+        // an existing admin has to promote them explicitly.
         await adminClient.from("profiles").upsert({
           id: invitedId,
           user_role: "recruiter",
+          is_team_admin: false,
         });
       }
 
@@ -118,6 +122,33 @@ serve(async (req) => {
       const { error: deleteError } = await adminClient.auth.admin.deleteUser(targetUserId);
       if (deleteError) {
         return new Response(JSON.stringify({ error: deleteError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "set_admin") {
+      const targetUserId = body.userId;
+      const makeAdmin = body.isAdmin === true;
+      if (!targetUserId || typeof targetUserId !== "string") {
+        return new Response(JSON.stringify({ error: "Missing 'userId' field" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { error: updateError } = await adminClient
+        .from("profiles")
+        .update({ is_team_admin: makeAdmin })
+        .eq("id", targetUserId);
+
+      if (updateError) {
+        return new Response(JSON.stringify({ error: updateError.message }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
