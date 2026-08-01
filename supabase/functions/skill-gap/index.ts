@@ -2,14 +2,37 @@
 //
 // Generates skill-gap explanations for the candidate Skill-Gap Analytics
 // screen. Holds GEMINI_API_KEY server-side so it never ships inside the app.
+// Successful calls are logged to ai_usage_log for the Usage Credits screen.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+async function logUsage(req: Request, feature: string) {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !anonKey || !serviceKey) return;
+
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) return;
+
+    const adminClient = createClient(supabaseUrl, serviceKey);
+    await adminClient.from("ai_usage_log").insert({ user_id: user.id, feature });
+  } catch (_e) {
+    // Usage logging must never break the actual feature response.
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -106,6 +129,8 @@ Return ONLY valid JSON, no markdown fences, in this exact shape:
       skill: String(e?.skill ?? ""),
       reason: String(e?.reason ?? ""),
     }));
+
+    await logUsage(req, "skill-gap");
 
     return new Response(JSON.stringify({ gaps }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
