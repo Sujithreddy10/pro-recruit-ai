@@ -1,0 +1,1257 @@
+// --- OFFICE MAP ENGINE ---
+class OfficeMapEngine extends StatefulWidget {
+  const OfficeMapEngine({super.key});
+  @override
+  State<OfficeMapEngine> createState() => _OfficeMapEngineState();
+}
+
+class _OfficeMapEngineState extends State<OfficeMapEngine> {
+  bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isLoading = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isLoading ? Icons.apartment : Icons.map, color: isLoading ? Colors.brown[300] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isLoading ? "LOADING OFFICE LAYOUT..." : "DESK BOOKING LIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isLoading ? "Fetching real-time desk availability and seating charts..." : "Office map loaded. Desk booking and resource allocation are now enabled.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isLoading) LinearProgressIndicator(color: Colors.brown[300]),
+        if (!isLoading) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW FLOOR PLAN")),
+      ]),
+    );
+  }
+}
+// --- CLOUD STORAGE ENGINE ---
+class CloudStorageEngine extends StatefulWidget {
+  const CloudStorageEngine({super.key});
+  @override
+  State<CloudStorageEngine> createState() => _CloudStorageEngineState();
+}
+
+class _CloudStorageEngineState extends State<CloudStorageEngine> {
+  bool isSyncing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSyncing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSyncing ? Icons.cloud : Icons.cloud_done, color: isSyncing ? Colors.lightBlue[400] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSyncing ? "SYNCING RESUME VAULT..." : "VAULT SYNCHRONIZED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSyncing ? "Encrypting and uploading candidate documentation to secure cloud storage..." : "Resume vault synchronized. All documents backed up and indexed for search.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSyncing) LinearProgressIndicator(color: Colors.lightBlue[400]),
+        if (!isSyncing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW VAULT")),
+      ]),
+    );
+  }
+}
+// --- DEVICE LOGISTIC ENGINE ---
+class DeviceLogisticEngine extends StatefulWidget {
+  const DeviceLogisticEngine({super.key});
+  @override
+  State<DeviceLogisticEngine> createState() => _DeviceLogisticEngineState();
+}
+
+class _DeviceLogisticEngineState extends State<DeviceLogisticEngine> {
+  bool isTracking = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isTracking = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isTracking ? Icons.local_shipping : Icons.inventory_2, color: isTracking ? Colors.indigoAccent : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isTracking ? "TRACKING ASSET SHIPMENT..." : "LOGISTICS UPDATED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isTracking ? "Connecting to global courier APIs and asset inventory systems..." : "Asset shipping confirmed. Hardware deployment dispatched to the designated regional hub.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isTracking) const LinearProgressIndicator(color: Colors.indigoAccent),
+        if (!isTracking) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW SHIPMENT STATUS")),
+      ]),
+    );
+  }
+}
+// --- GLOBAL MOBILITY ENGINE ---
+class GlobalMobilityEngine extends StatefulWidget {
+  const GlobalMobilityEngine({super.key});
+  @override
+  State<GlobalMobilityEngine> createState() => _GlobalMobilityEngineState();
+}
+
+class _GlobalMobilityEngineState extends State<GlobalMobilityEngine> {
+  bool isTransferring = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isTransferring = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isTransferring ? Icons.public : Icons.flight_land, color: isTransferring ? Colors.indigo[300] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isTransferring ? "INITIALIZING TRANSFER FLOW..." : "GLOBAL MOBILITY ACTIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isTransferring ? "Coordinating international visa, payroll, and relocation protocols..." : "Global mobility protocol live. All international transfers are now managed through the centralized portal.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isTransferring) LinearProgressIndicator(color: Colors.indigo[300]),
+        if (!isTransferring) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW TRANSFER LOG")),
+      ]),
+    );
+  }
+}
+// --- EXECUTIVE SYNC ENGINE ---
+class ExecutiveSyncEngine extends StatefulWidget {
+  const ExecutiveSyncEngine({super.key});
+  @override
+  State<ExecutiveSyncEngine> createState() => _ExecutiveSyncEngineState();
+}
+
+class _ExecutiveSyncEngineState extends State<ExecutiveSyncEngine> {
+  bool isSyncing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSyncing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSyncing ? Icons.sync_problem : Icons.admin_panel_settings, color: isSyncing ? Colors.black : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSyncing ? "INITIALIZING MASTER CONSOLE..." : "EXECUTIVE SYNC ACTIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSyncing ? "Synchronizing high-level recruitment data across all regional branches..." : "Executive sync complete. Master console is now reflecting global hiring metrics in real-time.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSyncing) LinearProgressIndicator(color: Colors.black),
+        if (!isSyncing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW MASTER CONSOLE")),
+      ]),
+    );
+  }
+}
+--- EXECUTIVE VIEW ENGINE ---
+class ExecutiveViewEngine extends StatefulWidget {
+  const ExecutiveViewEngine({super.key});
+  @override
+  State<ExecutiveViewEngine> createState() => _ExecutiveViewEngineState();
+}
+
+class _ExecutiveViewEngineState extends State<ExecutiveViewEngine> {
+  bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isLoading = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isLoading ? Icons.visibility : Icons.dashboard, color: isLoading ? Colors.grey[900] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isLoading ? "LOADING CEO DASHBOARD..." : "EXECUTIVE VIEW ACTIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isLoading ? "Aggregating high-level company performance and hiring KPIs..." : "Dashboard ready. Real-time insights into headcount, budget, and talent velocity are live.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isLoading) LinearProgressIndicator(color: Colors.grey[900]),
+        if (!isLoading) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW CEO DASHBOARD")),
+      ]),
+    );
+  }
+}
+// --- CANDIDATE APP ENGINE ---
+class CandidateAppEngine extends StatefulWidget {
+  const CandidateAppEngine({super.key});
+  @override
+  State<CandidateAppEngine> createState() => _CandidateAppEngineState();
+}
+
+class _CandidateAppEngineState extends State<CandidateAppEngine> {
+  bool isDeploying = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isDeploying = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isDeploying ? Icons.install_mobile : Icons.phone_android, color: isDeploying ? Colors.lime[900] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isDeploying ? "DEPLOYING PORTAL UI..." : "CANDIDATE APP LIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isDeploying ? "Compiling mobile-responsive UI components and candidate interface..." : "Candidate portal successfully deployed for seamless mobile applicant interaction.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isDeploying) LinearProgressIndicator(color: Colors.lime[900]),
+        if (!isDeploying) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("LAUNCH PORTAL")),
+      ]),
+    );
+  }
+}
+// --- JOB BOARD SYNC ENGINE ---
+class JobBoardSyncEngine extends StatefulWidget {
+  const JobBoardSyncEngine({super.key});
+  @override
+  State<JobBoardSyncEngine> createState() => _JobBoardSyncEngineState();
+}
+
+class _JobBoardSyncEngineState extends State<JobBoardSyncEngine> {
+  bool isSyncing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSyncing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSyncing ? Icons.sync_alt : Icons.check_circle, color: isSyncing ? Colors.deepOrange[700] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSyncing ? "SYNCING JOB BOARDS..." : "SYNC COMPLETE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSyncing ? "Broadcasting job postings to external recruitment portals..." : "Job board synchronization finished. Postings are live across all configured platforms.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSyncing) LinearProgressIndicator(color: Colors.deepOrange[700]),
+        if (!isSyncing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW SYNC LOG")),
+      ]),
+    );
+  }
+}
+// --- SEO OPTIMIZER ENGINE ---
+class SeoOptimizerEngine extends StatefulWidget {
+  const SeoOptimizerEngine({super.key});
+  @override
+  State<SeoOptimizerEngine> createState() => _SeoOptimizerEngineState();
+}
+
+class _SeoOptimizerEngineState extends State<SeoOptimizerEngine> {
+  bool isOptimizing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isOptimizing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isOptimizing ? Icons.search_off : Icons.search, color: isOptimizing ? Colors.blueGrey[900] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isOptimizing ? "OPTIMIZING SEO..." : "SEO OPTIMIZATION READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isOptimizing ? "Analyzing keywords and adjusting search visibility parameters..." : "SEO optimization complete. Job ranking potential improved by 25%.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isOptimizing) LinearProgressIndicator(color: Colors.blueGrey[900]),
+        if (!isOptimizing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW SEO RANKING")),
+      ]),
+    );
+  }
+}
+// --- SOCIAL SCOUT ENGINE ---
+class SocialScoutEngine extends StatefulWidget {
+  const SocialScoutEngine({super.key});
+  @override
+  State<SocialScoutEngine> createState() => _SocialScoutEngineState();
+}
+
+class _SocialScoutEngineState extends State<SocialScoutEngine> {
+  bool isScouting = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isScouting = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isScouting ? Icons.share : Icons.person_search, color: isScouting ? Colors.blueAccent[400] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isScouting ? "SCOUTING SOCIAL NETWORKS..." : "SOCIAL SCOUT ACTIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isScouting ? "Scanning public professional profiles across Meta networks..." : "Scouting complete. High-potential talent profiles successfully imported to the hub.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isScouting) LinearProgressIndicator(color: Colors.blueAccent[400]),
+        if (!isScouting) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW SCOUTED PROFILES")),
+      ]),
+    );
+  }
+}
+// --- MAIL AUTOMATION ENGINE ---
+class MailAutomationEngine extends StatefulWidget {
+  const MailAutomationEngine({super.key});
+  @override
+  State<MailAutomationEngine> createState() => _MailAutomationEngineState();
+}
+
+class _MailAutomationEngineState extends State<MailAutomationEngine> {
+  bool isAutomating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isAutomating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isAutomating ? Icons.forward_to_inbox : Icons.mark_email_read, color: isAutomating ? Colors.pink[800] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isAutomating ? "INITIALIZING NURTURE LOOP..." : "AUTOMATION ACTIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isAutomating ? "Configuring multi-stage email drip campaigns for pipeline nurturing..." : "Nurture loops live. Automated sequences active for all active candidates.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isAutomating) LinearProgressIndicator(color: Colors.pink[800]),
+        if (!isAutomating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW NURTURE DASH")),
+      ]),
+    );
+  }
+}
+// --- WHATSAPP BOT ENGINE ---
+class WhatsAppBotEngine extends StatefulWidget {
+  const WhatsAppBotEngine({super.key});
+  @override
+  State<WhatsAppBotEngine> createState() => _WhatsAppBotEngineState();
+}
+
+class _WhatsAppBotEngineState extends State<WhatsAppBotEngine> {
+  bool isConnecting = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isConnecting = false); });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        isConnecting 
+            ? const Icon(Icons.message, color: Colors.green, size: 80)
+            : const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isConnecting ? "CONNECTING TO WHATSAPP API..." : "DIRECT CONNECT ACTIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isConnecting ? "Establishing secure messaging tunnel for automated candidate updates..." : "Connection established. Real-time candidate communication is now synced to the hub.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isConnecting) LinearProgressIndicator(color: Colors.green[600]),
+        if (!isConnecting) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("OPEN CHAT INTERFACE")),
+      ]),
+    );
+  }
+}
+// --- DIVERSITY MAP ENGINE ---
+class DiversityMapEngine extends StatefulWidget {
+  const DiversityMapEngine({super.key});
+  @override
+  State<DiversityMapEngine> createState() => _DiversityMapEngineState();
+}
+
+class _DiversityMapEngineState extends State<DiversityMapEngine> {
+  bool isMapping = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isMapping = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isMapping ? Icons.language : Icons.public, color: isMapping ? Colors.deepPurpleAccent : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isMapping ? "MAPPING GLOBAL MIX..." : "DIVERSITY MAP READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isMapping ? "Analyzing regional representation and cross-cultural talent distribution..." : "Global diversity map generated. Representation balanced across all operational zones.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isMapping) LinearProgressIndicator(color: Colors.deepPurpleAccent),
+        if (!isMapping) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW DIVERSITY STATS")),
+      ]),
+    );
+  }
+}
+// --- TALENT POOL ENGINE ---
+class TalentPoolEngine extends StatefulWidget {
+  const TalentPoolEngine({super.key});
+  @override
+  State<TalentPoolEngine> createState() => _TalentPoolEngineState();
+}
+
+class _TalentPoolEngineState extends State<TalentPoolEngine> {
+  bool isIndexing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isIndexing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isIndexing ? Icons.waves : Icons.group, color: isIndexing ? Colors.blue[900] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isIndexing ? "INDEXING TALENT POOL..." : "SILVER MEDALISTS READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isIndexing ? "Analyzing historical silver-medalist profiles for re-engagement..." : "Talent pool optimized. High-potential secondary candidates are tagged and ready for outreach.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isIndexing) LinearProgressIndicator(color: Colors.blue[900]),
+        if (!isIndexing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW POOL")),
+      ]),
+    );
+  }
+}
+// --- TALENT DENSITY ENGINE ---
+class TalentDensityEngine extends StatefulWidget {
+  const TalentDensityEngine({super.key});
+  @override
+  State<TalentDensityEngine> createState() => _TalentDensityEngineState();
+}
+
+class _TalentDensityEngineState extends State<TalentDensityEngine> {
+  bool isCalculating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isCalculating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isCalculating ? Icons.density_medium : Icons.analytics, color: isCalculating ? Colors.tealAccent[400] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isCalculating ? "CALCULATING TALENT DENSITY..." : "TOP 1% STATS READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isCalculating ? "Mapping high-performer concentration across active talent databases..." : "Density analysis complete. Top 1% talent clusters identified for high-impact roles.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isCalculating) LinearProgressIndicator(color: Colors.tealAccent[400]),
+        if (!isCalculating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW DENSITY MAP")),
+      ]),
+    );
+  }
+}
+// --- LEADERSHIP HUB ENGINE ---
+class LeadershipHubEngine extends StatefulWidget {
+  const LeadershipHubEngine({super.key});
+  @override
+  State<LeadershipHubEngine> createState() => _LeadershipHubEngineState();
+}
+
+class _LeadershipHubEngineState extends State<LeadershipHubEngine> {
+  bool isIdentifying = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isIdentifying = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isIdentifying ? Icons.star_border_outlined : Icons.workspace_premium, color: isIdentifying ? Colors.blue[400] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isIdentifying ? "IDENTIFYING LEADERS..." : "HIPO TALENT IDENTIFIED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isIdentifying ? "Assessing leadership potential and long-term trajectory metrics..." : "High-potential talent successfully identified and categorized for leadership development.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isIdentifying) LinearProgressIndicator(color: Colors.blue[400]),
+        if (!isIdentifying) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW HIPOS")),
+      ]),
+    );
+  }
+}
+// --- TRAVEL DESK ENGINE ---
+class TravelDeskEngine extends StatefulWidget {
+  const TravelDeskEngine({super.key});
+  @override
+  State<TravelDeskEngine> createState() => _TravelDeskEngineState();
+}
+
+class _TravelDeskEngineState extends State<TravelDeskEngine> {
+  bool isBooking = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isBooking = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isBooking ? Icons.flight : Icons.flight_land, color: isBooking ? Colors.blue[800] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isBooking ? "CONFIGURING INTERVIEW TRIP..." : "TRAVEL ARRANGEMENTS READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isBooking ? "Securing flight, hotel, and local transit for candidate interview..." : "Travel itinerary finalized. All bookings confirmed for upcoming interview trip.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isBooking) LinearProgressIndicator(color: Colors.blue[800]),
+        if (!isBooking) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW ITINERARY")),
+      ]),
+    );
+  }
+}
+// --- VISA TRACKER ENGINE ---
+class VisaTrackerEngine extends StatefulWidget {
+  const VisaTrackerEngine({super.key});
+  @override
+  State<VisaTrackerEngine> createState() => _VisaTrackerEngineState();
+}
+
+class _VisaTrackerEngineState extends State<VisaTrackerEngine> {
+  bool isSyncing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSyncing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSyncing ? Icons.badge : Icons.verified_user, color: isSyncing ? Colors.orange[800] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSyncing ? "SYNCING VISA STATUS..." : "VISA TRACKER ACTIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSyncing ? "Connecting to global immigration portals and expiry databases..." : "Visa tracking synchronized. All international mobility documents are compliant and up to date.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSyncing) LinearProgressIndicator(color: Colors.orange[800]),
+        if (!isSyncing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW MOBILITY LOG")),
+      ]),
+    );
+  }
+}
+// --- RELOCATION AI ENGINE ---
+class RelocationAiEngine extends StatefulWidget {
+  const RelocationAiEngine({super.key});
+  @override
+  State<RelocationAiEngine> createState() => _RelocationAiEngineState();
+}
+
+class _RelocationAiEngineState extends State<RelocationAiEngine> {
+  bool isProcessing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isProcessing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isProcessing ? Icons.move_up : Icons.flight_takeoff, color: isProcessing ? Colors.deepOrangeAccent : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isProcessing ? "PROCESSING RELOCATION LOGISTICS..." : "RELOCATION AI ENABLED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isProcessing ? "Automating visa documentation and cross-border moving coordination..." : "Relocation workflow optimized. All travel and immigration compliance tasks are now live.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isProcessing) LinearProgressIndicator(color: Colors.deepOrangeAccent),
+        if (!isProcessing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW RELOCATION PLAN")),
+      ]),
+    );
+  }
+}
+// --- CANDIDATE UX ENGINE ---
+class CandidateUxEngine extends StatefulWidget {
+  const CandidateUxEngine({super.key});
+  @override
+  State<CandidateUxEngine> createState() => _CandidateUxEngineState();
+}
+
+class _CandidateUxEngineState extends State<CandidateUxEngine> {
+  bool isCalculating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isCalculating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isCalculating ? Icons.sentiment_satisfied : Icons.star_border, color: isCalculating ? Colors.pink[300] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isCalculating ? "CALCULATING CANDIDATE NPS..." : "UX SCORE CARD READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isCalculating ? "Aggregating candidate experience survey data and platform interaction metrics..." : "Candidate UX analysis complete. NPS score updated based on real-time feedback loop.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isCalculating) LinearProgressIndicator(color: Colors.pink[300]),
+        if (!isCalculating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW UX REPORT")),
+      ]),
+    );
+  }
+}
+// --- ATS HEALTH ENGINE ---
+class AtsHealthEngine extends StatefulWidget {
+  const AtsHealthEngine({super.key});
+  @override
+  State<AtsHealthEngine> createState() => _AtsHealthEngineState();
+}
+
+class _AtsHealthEngineState extends State<AtsHealthEngine> {
+  bool isScanning = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isScanning = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isScanning ? Icons.monitor_heart : Icons.health_and_safety, color: isScanning ? Colors.red[400] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isScanning ? "DIAGNOSING ATS PIPELINE..." : "PIPELINE HEALTH OPTIMAL", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isScanning ? "Analyzing pipeline stagnation and candidate conversion bottlenecks..." : "Audit complete. No critical bottlenecks detected in current hiring workflow.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isScanning) LinearProgressIndicator(color: Colors.red[400]),
+        if (!isScanning) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW HEALTH REPORT")),
+      ]),
+    );
+  }
+}
+// --- ATS MIGRATION ENGINE ---
+class AtsMigrationEngine extends StatefulWidget {
+  const AtsMigrationEngine({super.key});
+  @override
+  State<AtsMigrationEngine> createState() => _AtsMigrationEngineState();
+}
+
+class _AtsMigrationEngineState extends State<AtsMigrationEngine> {
+  bool isMigrating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isMigrating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isMigrating ? Icons.data_usage : Icons.sync, color: isMigrating ? Colors.blueGrey[600] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isMigrating ? "IMPORTING LEGACY DATA..." : "MIGRATION COMPLETE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isMigrating ? "Mapping legacy ATS records into the new centralized database..." : "Migration successful. All historical candidate records safely imported and verified.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isMigrating) LinearProgressIndicator(color: Colors.blueGrey[600]),
+        if (!isMigrating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW MIGRATION REPORT")),
+      ]),
+    );
+  }
+}
+// --- SOURCING ROBOT ENGINE ---
+class SourcingRobotEngine extends StatefulWidget {
+  const SourcingRobotEngine({super.key});
+  @override
+  State<SourcingRobotEngine> createState() => _SourcingRobotEngineState();
+}
+
+class _SourcingRobotEngineState extends State<SourcingRobotEngine> {
+  bool isScraping = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isScraping = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isScraping ? Icons.smart_toy : Icons.person_search, color: isScraping ? Colors.purple : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isScraping ? "AI SOURCING ACTIVE..." : "SOURCING COMPLETE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isScraping ? "Robot is scouring web profiles and GitHub repositories for top talent..." : "Sourcing complete. 120 new candidate profiles identified and imported.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isScraping) const LinearProgressIndicator(color: Colors.purple),
+        if (!isScraping) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW NEW CANDIDATES")),
+      ]),
+    );
+  }
+}
+// --- PIPELINE MAP ENGINE ---
+class PipelineMapEngine extends StatefulWidget {
+  const PipelineMapEngine({super.key});
+  @override
+  State<PipelineMapEngine> createState() => _PipelineMapEngineState();
+}
+
+class _PipelineMapEngineState extends State<PipelineMapEngine> {
+  bool isMapping = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isMapping = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isMapping ? Icons.account_tree : Icons.share_location, color: isMapping ? Colors.pink : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isMapping ? "MAPPING PIPELINE FLOW..." : "MAP GENERATED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isMapping ? "Visualizing candidate movement across hiring stages in real-time..." : "Pipeline map ready. 12 active hiring streams visualized across Telangana clusters.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isMapping) const LinearProgressIndicator(color: Colors.pink),
+        if (!isMapping) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW LIVE MAP")),
+      ]),
+    );
+  }
+}
+// --- COLLAB HUB ENGINE ---
+class CollabHubEngine extends StatefulWidget {
+  const CollabHubEngine({super.key});
+  @override
+  State<CollabHubEngine> createState() => _CollabHubEngineState();
+}
+
+class _CollabHubEngineState extends State<CollabHubEngine> {
+  bool isSyncing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSyncing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSyncing ? Icons.forum : Icons.group_add, color: isSyncing ? Colors.deepPurple : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSyncing ? "SYNCING TEAM CHANNELS..." : "COLLAB HUB READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSyncing ? "Connecting with recruitment teams and panel interviewers..." : "Collaboration tools synchronized. 8 active team channels updated.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSyncing) const LinearProgressIndicator(color: Colors.deepPurple),
+        if (!isSyncing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("OPEN TEAM SYNC")),
+      ]),
+    );
+  }
+}
+// --- BRAND HUB ENGINE ---
+class BrandHubEngine extends StatefulWidget {
+  const BrandHubEngine({super.key});
+  @override
+  State<BrandHubEngine> createState() => _BrandHubEngineState();
+}
+
+class _BrandHubEngineState extends State<BrandHubEngine> {
+  bool isSyncing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSyncing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSyncing ? Icons.auto_fix_high : Icons.brush, color: isSyncing ? Colors.brown : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSyncing ? "SYNCING BRAND ASSETS..." : "BRAND HUB READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSyncing ? "Fetching global employer branding guidelines and UI components..." : "Brand assets synced. All templates and logos are now compliant with enterprise standards.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSyncing) const LinearProgressIndicator(color: Colors.brown),
+        if (!isSyncing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("ACCESS BRAND KIT")),
+      ]),
+    );
+  }
+}
+// --- SCHEDULER ENGINE ---
+class SchedulerEngine extends StatefulWidget {
+  const SchedulerEngine({super.key});
+  @override
+  State<SchedulerEngine> createState() => _SchedulerEngineState();
+}
+
+class _SchedulerEngineState extends State<SchedulerEngine> {
+  bool isSyncing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSyncing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSyncing ? Icons.event_available : Icons.calendar_month, color: isSyncing ? Colors.lightBlue : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSyncing ? "SYNCING AUTO-SLOTS..." : "SCHEDULER READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSyncing ? "Checking interviewer availability and candidate timezones..." : "Auto-slots updated. 12 interview sessions successfully scheduled for this week.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSyncing) const LinearProgressIndicator(color: Colors.lightBlue),
+        if (!isSyncing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW CALENDAR")),
+      ]),
+    );
+  }
+}
+// --- EXEC SEARCH ENGINE ---
+class ExecSearchEngine extends StatefulWidget {
+  const ExecSearchEngine({super.key});
+  @override
+  State<ExecSearchEngine> createState() => _ExecSearchEngineState();
+}
+
+class _ExecSearchEngineState extends State<ExecSearchEngine> {
+  bool isHunting = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isHunting = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isHunting ? Icons.stars : Icons.emoji_events, color: isHunting ? Colors.indigo : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isHunting ? "AI HEADHUNTING ACTIVE..." : "EXECUTIVE SEARCH COMPLETE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isHunting ? "Scanning global executive databases for leadership talent..." : "Search complete. 5 top-tier leadership candidates identified for direct outreach.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isHunting) const LinearProgressIndicator(color: Colors.indigo),
+        if (!isHunting) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW LEADERSHIP DOSSIER")),
+      ]),
+    );
+  }
+}
+// --- RESUME BUILDER ENGINE ---
+class ResumeBuilderEngine extends StatefulWidget {
+  const ResumeBuilderEngine({super.key});
+  @override
+  State<ResumeBuilderEngine> createState() => _ResumeBuilderEngineState();
+}
+
+class _ResumeBuilderEngineState extends State<ResumeBuilderEngine> {
+  bool isGenerating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isGenerating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isGenerating ? Icons.contact_page : Icons.picture_as_pdf, color: isGenerating ? Colors.teal : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isGenerating ? "BUILDING AI RESUME..." : "RESUME GENERATED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isGenerating ? "Analyzing your professional experience to craft the perfect profile..." : "Resume generation complete. PDF version optimized for ATS parsing ready for download.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isGenerating) const LinearProgressIndicator(color: Colors.teal),
+        if (!isGenerating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("DOWNLOAD PDF")),
+      ]),
+    );
+  }
+}
+// --- VIDEO BRIDGE ENGINE ---
+class VideoBridgeEngine extends StatefulWidget {
+  const VideoBridgeEngine({super.key});
+  @override
+  State<VideoBridgeEngine> createState() => _VideoBridgeEngineState();
+}
+
+class _VideoBridgeEngineState extends State<VideoBridgeEngine> {
+  bool isConnecting = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isConnecting = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isConnecting ? Icons.video_call : Icons.videocam, color: isConnecting ? const Color(0xFF475569) : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isConnecting ? "ESTABLISHING SECURE BRIDGE..." : "BRIDGE CONNECTED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isConnecting ? "Initializing low-latency peer-to-peer video stream..." : "Video bridge established. Secure connection ready for live coding interview.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isConnecting) const LinearProgressIndicator(color: Color(0xFF475569)),
+        if (!isConnecting) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("LAUNCH INTERVIEW")),
+      ]),
+    );
+  }
+}
+// --- APPROVAL FLOW ENGINE ---
+class ApprovalFlowEngine extends StatefulWidget {
+  const ApprovalFlowEngine({super.key});
+  @override
+  State<ApprovalFlowEngine> createState() => _ApprovalFlowEngineState();
+}
+
+class _ApprovalFlowEngineState extends State<ApprovalFlowEngine> {
+  bool isProcessing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isProcessing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isProcessing ? Icons.fact_check : Icons.task_alt, color: isProcessing ? Colors.red : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isProcessing ? "PROCESSING APPROVALS..." : "APPROVALS PROCESSED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isProcessing ? "Routing contracts to department heads for digital signatures..." : "All pending approvals have been successfully routed and verified.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isProcessing) const LinearProgressIndicator(color: Colors.red),
+        if (!isProcessing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW APPROVAL LOG")),
+      ]),
+    );
+  }
+}
+--- BOOMERANG HUB ENGINE ---
+class BoomerangHubEngine extends StatefulWidget {
+  const BoomerangHubEngine({super.key});
+  @override
+  State<BoomerangHubEngine> createState() => _BoomerangHubEngineState();
+}
+
+class _BoomerangHubEngineState extends State<BoomerangHubEngine> {
+  bool isRehiring = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isRehiring = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isRehiring ? Icons.restore : Icons.restart_alt, color: isRehiring ? Colors.cyan[800] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isRehiring ? "SCANNING ALUMNI DATABASE..." : "RE-HIRE LOOP ACTIVE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isRehiring ? "Identifying high-performing former employees for targeted re-engagement..." : "Boomerang hub synchronized. Alumni candidates flagged for potential re-hire opportunities.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isRehiring) LinearProgressIndicator(color: Colors.cyan[800]),
+        if (!isRehiring) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW ALUMNI LIST")),
+      ]),
+    );
+  }
+}
+// --- SPEED HIRE ENGINE ---
+class SpeedHireEngine extends StatefulWidget {
+  const SpeedHireEngine({super.key});
+  @override
+  State<SpeedHireEngine> createState() => _SpeedHireEngineState();
+}
+
+class _SpeedHireEngineState extends State<SpeedHireEngine> {
+  bool isAccelerating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isAccelerating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isAccelerating ? Icons.bolt : Icons.rocket_launch, color: isAccelerating ? Colors.yellow[800] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isAccelerating ? "ACCELERATING 24HR WORKFLOW..." : "SPEED HIRE ENABLED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isAccelerating ? "Compressing interview stages and automating approval signatures..." : "24hr workflow active. Time-to-hire window reduced to critical path milestones.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isAccelerating) LinearProgressIndicator(color: Colors.yellow[800]),
+        if (!isAccelerating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW FAST-TRACK QUEUE")),
+      ]),
+    );
+  }
+}
+// --- AUTO-REJECT ENGINE ---
+class AutoRejectEngine extends StatefulWidget {
+  const AutoRejectEngine({super.key});
+  @override
+  State<AutoRejectEngine> createState() => _AutoRejectEngineState();
+}
+
+class _AutoRejectEngineState extends State<AutoRejectEngine> {
+  bool isProcessing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isProcessing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isProcessing ? Icons.cancel : Icons.support_agent, color: isProcessing ? Colors.redAccent : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isProcessing ? "PROCESSING REJECTIONS..." : "POLITE VOICE ENABLED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isProcessing ? "Generating personalized AI-voice rejection scripts for non-fit candidates..." : "Rejections finalized. All candidates have been notified via personalized AI-generated feedback.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isProcessing) LinearProgressIndicator(color: Colors.redAccent),
+        if (!isProcessing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW REJECTION LOG")),
+      ]),
+    );
+  }
+}
+// --- REFERENCE HUB ENGINE ---
+class ReferenceHubEngine extends StatefulWidget {
+  const ReferenceHubEngine({super.key});
+  @override
+  State<ReferenceHubEngine> createState() => _ReferenceHubEngineState();
+}
+
+class _ReferenceHubEngineState extends State<ReferenceHubEngine> {
+  bool isVerifying = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isVerifying = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isVerifying ? Icons.contact_mail : Icons.assignment_turned_in, color: isVerifying ? Colors.teal[900] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isVerifying ? "CONTACTING REFERENCES..." : "REF CHECK COMPLETE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isVerifying ? "Automated background reference checks in progress..." : "Reference checks verified. Candidate performance history confirmed by 3 prior employers.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isVerifying) LinearProgressIndicator(color: Colors.teal[900]),
+        if (!isVerifying) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW VERIFICATION LOG")),
+      ]),
+    );
+  }
+}
+--- VIDEO HUB ENGINE ---
+class VideoHubEngine extends StatefulWidget {
+  const VideoHubEngine({super.key});
+  @override
+  State<VideoHubEngine> createState() => _VideoHubEngineState();
+}
+
+class _VideoHubEngineState extends State<VideoHubEngine> {
+  bool isSyncing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSyncing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSyncing ? Icons.video_library : Icons.play_circle_fill, color: isSyncing ? Colors.blue : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSyncing ? "SYNCING VIDEO LIBRARIES..." : "LIBRARY READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSyncing ? "Retrieving recorded candidate pitches from cloud storage..." : "Found 128 new candidate video pitches ready for AI screening.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSyncing) const LinearProgressIndicator(color: Colors.blue),
+        if (!isSyncing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("OPEN VIDEO CONSOLE")),
+      ]),
+    );
+  }
+}
+// --- BGC PORTAL ENGINE ---
+class BgcPortalEngine extends StatefulWidget {
+  const BgcPortalEngine({super.key});
+  @override
+  State<BgcPortalEngine> createState() => _BgcPortalEngineState();
+}
+
+class _BgcPortalEngineState extends State<BgcPortalEngine> {
+  bool isAuditing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isAuditing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isAuditing ? Icons.verified_user : Icons.check_circle, color: isAuditing ? Colors.redAccent : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isAuditing ? "BGC AUDIT IN PROGRESS..." : "AUDIT COMPLETE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isAuditing ? "Verifying educational history and past employment via Blockchain Ledger..." : "All credentials validated. No discrepancies found in employment history.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isAuditing) const LinearProgressIndicator(color: Colors.redAccent),
+        if (!isAuditing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW FULL REPORT")),
+      ]),
+    );
+  }
+}
+--- ASSESSMENT ENGINE ---
+class AssessmentEngine extends StatefulWidget {
+  const AssessmentEngine({super.key});
+  @override
+  State<AssessmentEngine> createState() => _AssessmentEngineState();
+}
+
+class _AssessmentEngineState extends State<AssessmentEngine> {
+  bool isPreparing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isPreparing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isPreparing ? Icons.quiz : Icons.task_alt, color: isPreparing ? Colors.orange : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isPreparing ? "GENERATING ASSESSMENT..." : "ASSESSMENT READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isPreparing ? "Compiling technical questions for Flutter Developer role..." : "Assessment link generated. 15 Questions, 45 Minutes, Anti-cheat enabled.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isPreparing) const LinearProgressIndicator(color: Colors.orange),
+        if (!isPreparing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("SEND TO CANDIDATE")),
+      ]),
+    );
+  }
+}

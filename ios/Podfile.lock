@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - openrouter (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - openrouter (from `.symlinks/plugins/openrouter/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  openrouter:
+    :path: ".symlinks/plugins/openrouter/ios"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  openrouter: 01a1096619182de80a0da49a97cea088dc58f124
+
+PODFILE CHECKSUM: dd6f8beda3bc4ef61a4b82ec54885f8ce29ffb56
+
+COCOAPODS: 1.16.2

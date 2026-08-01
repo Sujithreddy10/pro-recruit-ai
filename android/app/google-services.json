@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "208700310498",
+    "project_id": "samarth-talent-2026",
+    "storage_bucket": "samarth-talent-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:208700310498:android:fca67c7ddee8ff2b9a2fbb",
+        "android_client_info": {
+          "package_name": "com.example.my_first_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "208700310498-25emm840u7sbsqckv4infj03a8gginpl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDga2ojO4n4s1hEn_S2oeSX43ChcFUs77c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "208700310498-25emm840u7sbsqckv4infj03a8gginpl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "208700310498-c01amid367lkknc01do0bds18lsei6st.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.myFirstApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

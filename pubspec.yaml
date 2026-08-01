@@ -1,0 +1,46 @@
+name: pro_recruit_ai
+description: A professional recruitment app for the next generation.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  path_provider: ^2.1.4
+  share_plus: ^10.1.2
+  pdf: ^3.11.1
+  flutter:
+    sdk: flutter
+  onesignal_flutter: ^5.2.0
+  openrouter: ^1.0.1
+  
+  # UI & Design
+  cupertino_icons: ^1.0.8
+  google_fonts: ^8.1.0
+  font_awesome_flutter: ^11.0.0
+  
+  # Backend Services
+  supabase_flutter: ^2.15.0
+
+  # AI Intelligence & Permissions
+  google_generative_ai: ^0.4.0
+  speech_to_text: ^7.4.0
+  permission_handler: ^12.0.3
+  flutter_dotenv: ^6.0.1
+
+  # File Handling
+  file_picker: ^8.1.2
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/.env

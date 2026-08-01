@@ -1,0 +1,461 @@
+--- BILLING DESK ENGINE ---
+class BillingDeskEngine extends StatefulWidget {
+  const BillingDeskEngine({super.key});
+  @override
+  State<BillingDeskEngine> createState() => _BillingDeskEngineState();
+}
+
+class _BillingDeskEngineState extends State<BillingDeskEngine> {
+  bool isProcessing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isProcessing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isProcessing ? Icons.receipt : Icons.receipt_long, color: isProcessing ? Colors.blueGrey[400] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isProcessing ? "PROCESSING INVOICES..." : "BILLING DATA READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isProcessing ? "AI is analyzing agency invoices and verifying billing cycles..." : "Billing desk synced. All invoices processed and validated for payment release.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isProcessing) LinearProgressIndicator(color: Colors.blueGrey[400]),
+        if (!isProcessing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW INVOICE LOG")),
+      ]),
+    );
+  }
+}
+// --- TAX COMPLIANCE ENGINE ---
+class TaxComplianceEngine extends StatefulWidget {
+  const TaxComplianceEngine({super.key});
+  @override
+  State<TaxComplianceEngine> createState() => _TaxComplianceEngineState();
+}
+
+class _TaxComplianceEngineState extends State<TaxComplianceEngine> {
+  bool isAuditing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isAuditing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isAuditing ? Icons.account_balance : Icons.check_circle_outline, color: isAuditing ? Colors.greenAccent[400] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isAuditing ? "RUNNING TAX AUDIT..." : "COMPLIANCE VERIFIED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isAuditing ? "Verifying global TDS withholding and regional tax filings..." : "Tax audit complete. All payroll deductions comply with current international tax codes.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isAuditing) LinearProgressIndicator(color: Colors.greenAccent[400]),
+        if (!isAuditing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW TAX REPORT")),
+      ]),
+    );
+  }
+}
+--- OFFER VAULT ENGINE ---
+class OfferVaultEngine extends StatefulWidget {
+  const OfferVaultEngine({super.key});
+  @override
+  State<OfferVaultEngine> createState() => _OfferVaultEngineState();
+}
+
+class _OfferVaultEngineState extends State<OfferVaultEngine> {
+  bool isDecrypting = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isDecrypting = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isDecrypting ? Icons.lock_outline : Icons.lock_open, color: isDecrypting ? Colors.blueGrey : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isDecrypting ? "ACCESSING SECURE VAULT..." : "VAULT UNLOCKED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isDecrypting ? "Verifying administrative credentials for historical offer data..." : "Vault unlocked. All sensitive offer contracts are now visible for audit.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isDecrypting) const LinearProgressIndicator(color: Colors.blueGrey),
+        if (!isDecrypting) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("BROWSE VAULT")),
+      ]),
+    );
+  }
+}
+// --- ESOP LEDGER ENGINE ---
+class EsopLedgerEngine extends StatefulWidget {
+  const EsopLedgerEngine({super.key});
+  @override
+  State<EsopLedgerEngine> createState() => _EsopLedgerEngineState();
+}
+
+class _EsopLedgerEngineState extends State<EsopLedgerEngine> {
+  bool isCalculating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isCalculating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isCalculating ? Icons.pie_chart_outline : Icons.account_balance_wallet, color: isCalculating ? Colors.amber[900] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isCalculating ? "CALCULATING EQUITY..." : "ESOP LEDGER READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isCalculating ? "Aggregating vested shares and current equity holdings..." : "ESOP ledger updated. All equity distributions verified against cap table.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isCalculating) LinearProgressIndicator(color: Colors.amber[900]),
+        if (!isCalculating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW EQUITY DASH")),
+      ]),
+    );
+  }
+}
+// --- COMPLIANCE 360 ENGINE ---
+class Compliance360Engine extends StatefulWidget {
+  const Compliance360Engine({super.key});
+  @override
+  State<Compliance360Engine> createState() => _Compliance360EngineState();
+}
+
+class _Compliance360EngineState extends State<Compliance360Engine> {
+  bool isAuditing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isAuditing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isAuditing ? Icons.verified : Icons.gpp_good, color: isAuditing ? Colors.brown[400] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isAuditing ? "RUNNING COMPLIANCE AUDIT..." : "COMPLIANCE VERIFIED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isAuditing ? "Scanning data protocols for ISO and GDPR regulatory compliance..." : "Audit complete. All data handling processes meet global compliance standards.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isAuditing) LinearProgressIndicator(color: Colors.brown[400]),
+        if (!isAuditing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW COMPLIANCE LOG")),
+      ]),
+    );
+  }
+}
+--- TAX SAVER ENGINE ---
+class TaxSaverEngine extends StatefulWidget {
+  const TaxSaverEngine({super.key});
+  @override
+  State<TaxSaverEngine> createState() => _TaxSaverEngineState();
+}
+
+class _TaxSaverEngineState extends State<TaxSaverEngine> {
+  bool isCalculating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isCalculating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isCalculating ? Icons.savings : Icons.account_balance_wallet, color: isCalculating ? Colors.green[300] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isCalculating ? "OPTIMIZING SALARY STRUCTURE..." : "TAX SAVINGS APPLIED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isCalculating ? "Analyzing tax-saving declarations and payroll components..." : "Optimization complete. New salary structure verified for maximum tax efficiency.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isCalculating) LinearProgressIndicator(color: Colors.green[300]),
+        if (!isCalculating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW TAX REPORT")),
+      ]),
+    );
+  }
+}
+// --- BONUS LOGIC ENGINE ---
+class BonusLogicEngine extends StatefulWidget {
+  const BonusLogicEngine({super.key});
+  @override
+  State<BonusLogicEngine> createState() => _BonusLogicEngineState();
+}
+
+class _BonusLogicEngineState extends State<BonusLogicEngine> {
+  bool isCalculating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isCalculating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isCalculating ? Icons.card_giftcard : Icons.payments, color: isCalculating ? Colors.pink[400] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isCalculating ? "CALCULATING VARIABLE PAY..." : "BONUS LOGIC APPLIED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isCalculating ? "Analyzing performance KPIs and historical variable pay triggers..." : "Bonus logic processed. Variable pay structures calculated for all eligible high-performers.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isCalculating) LinearProgressIndicator(color: Colors.pink[400]),
+        if (!isCalculating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW PAYOUT LOG")),
+      ]),
+    );
+  }
+}
+// --- JOB GRADING ENGINE ---
+class JobGradingEngine extends StatefulWidget {
+  const JobGradingEngine({super.key});
+  @override
+  State<JobGradingEngine> createState() => _JobGradingEngineState();
+}
+
+class _JobGradingEngineState extends State<JobGradingEngine> {
+  bool isGrading = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isGrading = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isGrading ? Icons.grade : Icons.account_balance, color: isGrading ? Colors.yellow[700] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isGrading ? "ANALYZING PAY BANDS..." : "JOB GRADING COMPLETE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isGrading ? "Evaluating internal role levels and market-competitive compensation bands..." : "Job grading successful. Compensation bands are aligned with enterprise salary standards.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isGrading) LinearProgressIndicator(color: Colors.yellow[700]),
+        if (!isGrading) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW PAY BANDS")),
+      ]),
+    );
+  }
+}
+// --- SMART CONTRACT ENGINE ---
+class SmartContractEngine extends StatefulWidget {
+  const SmartContractEngine({super.key});
+  @override
+  State<SmartContractEngine> createState() => _SmartContractEngineState();
+}
+
+class _SmartContractEngineState extends State<SmartContractEngine> {
+  bool isSecuring = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSecuring = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSecuring ? Icons.history_edu : Icons.verified_user, color: isSecuring ? Colors.blue[900] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSecuring ? "SECURING IP CONTRACTS..." : "SMART CONTRACT DEPLOYED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSecuring ? "Encrypting intellectual property clauses into immutable ledger..." : "Smart contract finalized. IP protection protocols are now active for this candidate profile.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSecuring) LinearProgressIndicator(color: Colors.blue[900]),
+        if (!isSecuring) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW CONTRACT LOG")),
+      ]),
+    );
+  }
+}
+// --- OFFER LOGIC ENGINE ---
+class OfferLogicEngine extends StatefulWidget {
+  const OfferLogicEngine({super.key});
+  @override
+  State<OfferLogicEngine> createState() => _OfferLogicEngineState();
+}
+
+class _OfferLogicEngineState extends State<OfferLogicEngine> {
+  bool isCalculating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isCalculating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isCalculating ? Icons.rule : Icons.check_circle, color: isCalculating ? Colors.redAccent[100] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isCalculating ? "CALCULATING OFFER TERMS..." : "AUTO-APPROVALS READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isCalculating ? "Validating candidate offer against department budget and compensation benchmarks..." : "Offer logic processed. Auto-approval workflow enabled for standard candidate packages.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isCalculating) LinearProgressIndicator(color: Colors.redAccent[100]),
+        if (!isCalculating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW OFFER DASHBOARD")),
+      ]),
+    );
+  }
+}
+// --- LEGAL AUDIT ENGINE ---
+class LegalAuditEngine extends StatefulWidget {
+  const LegalAuditEngine({super.key});
+  @override
+  State<LegalAuditEngine> createState() => _LegalAuditEngineState();
+}
+
+class _LegalAuditEngineState extends State<LegalAuditEngine> {
+  bool isAuditing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isAuditing = false); });
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isAuditing ? Icons.gavel_outlined : Icons.verified, color: isAuditing ? Colors.brown[300] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isAuditing ? "RUNNING COMPLIANCE CHECKS..." : "LEGAL AUDIT COMPLETE", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isAuditing ? "Auditing contract signatures, labor law compliance, and documentation trails..." : "Compliance check finished. All documentation verified against regional regulatory standards.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isAuditing) LinearProgressIndicator(color: Colors.brown[300]),
+        if (!isAuditing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW AUDIT REPORT")),
+      ]),
+    );
+  }
+}
+// --- LEGAL DESKTOP ENGINE ---
+class LegalDesktopEngine extends StatefulWidget {
+  const LegalDesktopEngine({super.key});
+  @override
+  State<LegalDesktopEngine> createState() => _LegalDesktopEngineState();
+}
+
+class _LegalDesktopEngineState extends State<LegalDesktopEngine> {
+  bool isParsing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isParsing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isParsing ? Icons.gavel_rounded : Icons.check_circle, color: isParsing ? Colors.blueGrey : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isParsing ? "PARSING CONTRACTS..." : "LEGAL DESKTOP READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isParsing ? "Scanning legal clauses and regulatory compliance frameworks..." : "Contracts optimized. Compliance verification passed for all pending employment agreements.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isParsing) const LinearProgressIndicator(color: Colors.blueGrey),
+        if (!isParsing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW CONTRACT AI")),
+      ]),
+    );
+  }
+}
+// --- COST PER HIRE ENGINE ---
+class CostPerHireEngine extends StatefulWidget {
+  const CostPerHireEngine({super.key});
+  @override
+  State<CostPerHireEngine> createState() => _CostPerHireEngineState();
+}
+
+class _CostPerHireEngineState extends State<CostPerHireEngine> {
+  bool isCalculating = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isCalculating = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isCalculating ? Icons.monetization_on : Icons.savings, color: isCalculating ? Colors.green[900] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isCalculating ? "CALCULATING COST METRICS..." : "BUDGET SAVING OPTIMIZED", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isCalculating ? "Aggregating recruitment spend against successful placements..." : "Efficiency analysis complete. Cost per hire reduced by 18% through AI-driven sourcing.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isCalculating) LinearProgressIndicator(color: Colors.green[900]),
+        if (!isCalculating) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW SAVINGS REPORT")),
+      ]),
+    );
+  }
+}
+// --- MARKET SALARY ENGINE ---
+class MarketSalaryEngine extends StatefulWidget {
+  const MarketSalaryEngine({super.key});
+  @override
+  State<MarketSalaryEngine> createState() => _MarketSalaryEngineState();
+}
+
+class _MarketSalaryEngineState extends State<MarketSalaryEngine> {
+  bool isSyncing = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () { if (mounted) setState(() => isSyncing = false); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: const EdgeInsets.all(25),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(isSyncing ? Icons.bar_chart : Icons.trending_up, color: isSyncing ? Colors.purple[800] : Colors.green, size: 80),
+        const SizedBox(height: 30),
+        Text(isSyncing ? "SYNCING MARKET BENCHMARKS..." : "LIVE BENCHMARKS READY", style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
+        const SizedBox(height: 15),
+        Text(isSyncing ? "Scanning real-time compensation data across industry sectors..." : "Benchmarks updated. Current salary offerings are aligned with 95th percentile market standards.", style: const TextStyle(color: Colors.grey, fontSize: 11), textAlign: TextAlign.center),
+        const SizedBox(height: 50),
+        if (isSyncing) LinearProgressIndicator(color: Colors.purple[800]),
+        if (!isSyncing) ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: () => Navigator.pop(context), child: const Text("VIEW BENCHMARK DASHBOARD")),
+      ]),
+    );
+  }
+}
