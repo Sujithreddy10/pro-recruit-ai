@@ -1,8 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 
 class SkillGapScreen extends StatefulWidget {
@@ -109,23 +106,25 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
     }
 
     try {
-      final apiKey = dotenv.get('GEMINI_API_KEY');
-      final model = GenerativeModel(model: 'gemini-2.0-flash', apiKey: apiKey);
-      final prompt = '''
-For the job title "${job['title']}", here are skills/keywords the candidate's resume does NOT currently show: ${missing.join(', ')}.
+      // Calls the Supabase Edge Function 'skill-gap', which holds the
+      // Gemini API key server-side. The key never ships inside the app.
+      final response = await Supabase.instance.client.functions.invoke(
+        'skill-gap',
+        body: {
+          'jobTitle': job['title'],
+          'missingSkills': missing,
+        },
+      );
 
-For each one, write exactly one honest, concise sentence (max 20 words) explaining why it matters for this specific role. Do not exaggerate or invent unrelated claims.
+      if (response.status != 200) {
+        throw 'Server error (${response.status})';
+      }
 
-Return ONLY valid JSON, no markdown fences, in this exact shape:
-[{"skill": "...", "reason": "..."}]
-''';
-      final response = await model.generateContent([Content.text(prompt)]);
-      final raw = (response.text ?? '').trim();
-      final cleaned = raw.replaceAll(RegExp(r'^```json'), '').replaceAll(RegExp(r'```$'), '').trim();
-      final parsed = jsonDecode(cleaned) as List<dynamic>;
+      final data = response.data as Map<String, dynamic>;
+      final gapsList = data['gaps'] as List<dynamic>;
 
       setState(() {
-        _gaps = parsed.map((e) => {'skill': e['skill'].toString(), 'reason': e['reason'].toString()}).toList();
+        _gaps = gapsList.map((e) => {'skill': e['skill'].toString(), 'reason': e['reason'].toString()}).toList();
         _loadingGap = false;
       });
     } catch (e) {
