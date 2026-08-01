@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 
@@ -26,7 +23,6 @@ class TalentMatchScreen extends StatefulWidget {
 class _TalentMatchScreenState extends State<TalentMatchScreen> {
   late Future<List<Map<String, dynamic>>> _matchesFuture;
   final Map<String, Future<_MatchResult>> _scoreCache = {};
-  final String _apiKey = dotenv.get('GEMINI_API_KEY');
 
   @override
   void initState() {
@@ -74,30 +70,25 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
     required String candidateName,
   }) {
     return _scoreCache.putIfAbsent(applicationId, () async {
-      final prompt = '''
-You are scoring how well a candidate fits a job, based only on the information given.
-Return ONLY valid JSON, no markdown fences, no extra text.
+      // Calls the Supabase Edge Function 'match-score', which holds the
+      // Gemini API key server-side. The key never ships inside the app.
+      final response = await Supabase.instance.client.functions.invoke(
+        'match-score',
+        body: {
+          'jobTitle': jobTitle,
+          'companyName': companyName,
+          'candidateName': candidateName,
+        },
+      );
 
-JOB TITLE: $jobTitle
-COMPANY: $companyName
-CANDIDATE: $candidateName (resume on file, not included in this prompt)
+      if (response.status != 200) {
+        throw 'Server error (${response.status})';
+      }
 
-Since detailed resume text isn't available here, give a conservative estimate based
-on role/title alignment only, and say so in the reasoning.
-
-Return JSON exactly in this shape:
-{"score": <integer 0-100>, "reasoning": "<one sentence>"}
-''';
-
-      final model = GenerativeModel(model: 'gemini-2.0-flash', apiKey: _apiKey);
-      final response = await model.generateContent([Content.text(prompt)]);
-      final raw = (response.text ?? '').trim();
-      final cleaned = raw.replaceAll(RegExp(r'^```json'), '').replaceAll(RegExp(r'```$'), '').trim();
-
-      final parsed = jsonDecode(cleaned) as Map<String, dynamic>;
+      final data = response.data as Map<String, dynamic>;
       return _MatchResult(
-        score: (parsed['score'] as num).toInt(),
-        reasoning: parsed['reasoning'] as String? ?? '',
+        score: (data['score'] as num).toInt(),
+        reasoning: data['reasoning'] as String? ?? '',
       );
     });
   }
