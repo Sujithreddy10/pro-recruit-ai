@@ -12,3 +12,4 @@ android/.gradle/
 android/local.properties
 assets/.env
 .env
+supabase/.temp/
