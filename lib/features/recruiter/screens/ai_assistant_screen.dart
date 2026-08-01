@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 
 class AIAssistantScreen extends StatefulWidget {
@@ -92,9 +90,19 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     });
 
     try {
-      final model = GenerativeModel(model: 'gemini-2.0-flash', apiKey: dotenv.get('GEMINI_API_KEY'));
-      final response = await model.generateContent([Content.text(prompt)]);
-      setState(() => _draftText = response.text ?? "No response generated.");
+      // Calls the Supabase Edge Function 'generate-draft', which holds the
+      // Gemini API key server-side. The key never ships inside the app.
+      final response = await Supabase.instance.client.functions.invoke(
+        'generate-draft',
+        body: {'prompt': prompt},
+      );
+
+      if (response.status != 200) {
+        throw 'Server error (${response.status})';
+      }
+
+      final data = response.data as Map<String, dynamic>;
+      setState(() => _draftText = data['text'] as String? ?? "No response generated.");
     } catch (e) {
       setState(() => _draftText = "Error generating draft: $e");
     } finally {
