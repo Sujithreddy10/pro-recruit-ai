@@ -8,6 +8,7 @@ import 'package:pro_recruit_ai/shared/app_design_system.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/scheduler_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/collab_hub_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/subscription_plan_screen.dart';
+import 'package:pro_recruit_ai/features/recruiter/screens/usage_credits_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_recruit_ai/shared/common_widgets.dart';
@@ -838,13 +839,7 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
             Navigator.pop(context);
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (c) => const FeatureDisplayPage(
-                  title: "Usage Credits",
-                  color: Color(0xFF16A34A),
-                  icon: Icons.account_balance_wallet_rounded,
-                ),
-              ),
+              MaterialPageRoute(builder: (c) => const UsageCreditsScreen()),
             );
           }),
           const Divider(),
