@@ -257,7 +257,10 @@ class _MainNavigationState extends State<MainNavigation> {
               Navigator.push(context, MaterialPageRoute(builder: (c) => const EliteProfileHub()));
             },
           ),
-          _drawerNavTile(Icons.folder_special_outlined, "Career Portfolio", const Color(0xFF16A34A)),
+          _drawerNavTile(Icons.folder_special_outlined, "Career Portfolio", const Color(0xFF16A34A), onTap: () {
+            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (c) => const EliteCertificatesScreen()));
+          }),
           const Divider(),
           AnimatedBuilder(
             animation: ThemeController.instance,
@@ -282,9 +285,10 @@ class _MainNavigationState extends State<MainNavigation> {
           SizedBox(height: AppSpacing.lg),
         ]),
       );
-  Widget _drawerNavTile(IconData i, String t, Color c) => ListTile(
+  Widget _drawerNavTile(IconData i, String t, Color c, {VoidCallback? onTap}) => ListTile(
       leading: Icon(i, color: c, size: 22),
-      title: Text(t, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w700, fontSize: 13)));
+      title: Text(t, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w700, fontSize: 13)),
+      onTap: onTap);
   // --- TAB 1 SCOUT (PREMIUM) ---
   Widget _scoutTab() {
     return FutureBuilder<List<Map<String, dynamic>>>(
