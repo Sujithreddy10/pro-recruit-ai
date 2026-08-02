@@ -12,31 +12,24 @@ class ResumeVaultScreen extends StatefulWidget {
 }
 
 class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
-  static const _tierLimits = {'free': 1, 'pro': 3, 'enterprise': -1};
-  static const _tierLabels = {'free': 'Free', 'pro': 'Pro', 'enterprise': 'Enterprise'};
+  static const int _maxResumes = 3;
 
-  late Future<_VaultData> _vaultFuture;
+  late Future<List<Map<String, dynamic>>> _resumesFuture;
   bool _isUploading = false;
 
   @override
   void initState() {
     super.initState();
-    _vaultFuture = _load();
+    _resumesFuture = _load();
   }
 
   void _reload() {
-    setState(() => _vaultFuture = _load());
+    setState(() => _resumesFuture = _load());
   }
 
-  Future<_VaultData> _load() async {
+  Future<List<Map<String, dynamic>>> _load() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return _VaultData(tier: 'free', resumes: []);
-
-    final profile = await Supabase.instance.client
-        .from('profiles')
-        .select('subscription_tier')
-        .eq('id', userId)
-        .maybeSingle();
+    if (userId == null) return [];
 
     final resumes = await Supabase.instance.client
         .from('candidate_resumes')
@@ -45,19 +38,15 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
         .order('is_primary', ascending: false)
         .order('created_at', ascending: false);
 
-    return _VaultData(
-      tier: profile?['subscription_tier'] as String? ?? 'free',
-      resumes: List<Map<String, dynamic>>.from(resumes),
-    );
+    return List<Map<String, dynamic>>.from(resumes);
   }
 
-  Future<void> _uploadResume(_VaultData data) async {
+  Future<void> _uploadResume(List<Map<String, dynamic>> resumes) async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
 
-    final limit = _tierLimits[data.tier] ?? 1;
-    if (limit != -1 && data.resumes.length >= limit) {
-      _showUpgradePrompt(data.tier);
+    if (resumes.length >= _maxResumes) {
+      _showLimitReachedDialog();
       return;
     }
 
@@ -83,7 +72,7 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
         'storage_path': storagePath,
         'file_name': fileName,
         'label': fileName.replaceAll('.pdf', '').replaceAll('_', ' '),
-        'is_primary': data.resumes.isEmpty,
+        'is_primary': resumes.isEmpty,
       });
 
       _reload();
@@ -181,21 +170,19 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
     }
   }
 
-  void _showUpgradePrompt(String tier) {
+  void _showLimitReachedDialog() {
     showDialog(
       context: context,
       builder: (c) => AlertDialog(
         title: const Text("Resume Slot Limit Reached"),
-        content: Text(
-          "The ${_tierLabels[tier]} plan allows ${_tierLimits[tier]} resume${_tierLimits[tier] == 1 ? '' : 's'}. "
-          "Upgrade your plan to store more versions.",
+        content: const Text(
+          "You can store up to 3 resumes at a time. Delete one you no longer need to upload a new version.",
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text("Not now")),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F766E)),
             onPressed: () => Navigator.pop(c),
-            child: const Text("Upgrade Plan"),
+            child: const Text("Got it"),
           ),
         ],
       ),
@@ -212,15 +199,14 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF0F766E)),
         elevation: 0,
       ),
-      body: FutureBuilder<_VaultData>(
-        future: _vaultFuture,
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _resumesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          final data = snapshot.data ?? _VaultData(tier: 'free', resumes: []);
-          final limit = _tierLimits[data.tier] ?? 1;
-          final atLimit = limit != -1 && data.resumes.length >= limit;
+          final resumes = snapshot.data ?? [];
+          final atLimit = resumes.length >= _maxResumes;
 
           return RefreshIndicator(
             onRefresh: () async => _reload(),
@@ -251,14 +237,12 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
                             Text("YOUR VAULT", style: AppTypography.sectionHeader.copyWith(color: Colors.white60, letterSpacing: 2)),
                             SizedBox(height: AppSpacing.xs),
                             Text(
-                              limit == -1
-                                  ? "${data.resumes.length} resumes · Unlimited"
-                                  : "${data.resumes.length} / $limit resumes",
+                              "${resumes.length} / $_maxResumes resumes",
                               style: AppTypography.headlineLarge.copyWith(color: AppColors.textLight),
                             ),
                             SizedBox(height: AppSpacing.xs),
                             Text(
-                              "${_tierLabels[data.tier]} plan",
+                              "Tailor a resume per role and switch your primary anytime",
                               style: AppTypography.caption.copyWith(color: Colors.white60),
                             ),
                           ],
@@ -268,7 +252,7 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
                   ),
                 ),
                 SizedBox(height: AppSpacing.xl),
-                if (data.resumes.isEmpty)
+                if (resumes.isEmpty)
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
                     child: Column(
@@ -284,9 +268,9 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
                     ),
                   )
                 else
-                  ...data.resumes.map((r) => _resumeCard(r)),
+                  ...resumes.map((r) => _resumeCard(r)),
                 SizedBox(height: AppSpacing.lg),
-                _uploadButton(data, atLimit),
+                _uploadButton(resumes, atLimit),
               ],
             ),
           );
@@ -371,11 +355,11 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
     );
   }
 
-  Widget _uploadButton(_VaultData data, bool atLimit) {
+  Widget _uploadButton(List<Map<String, dynamic>> resumes, bool atLimit) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: _isUploading ? null : () => _uploadResume(data),
+        onPressed: _isUploading ? null : () => _uploadResume(resumes),
         style: ElevatedButton.styleFrom(
           backgroundColor: atLimit ? AppColors.textMuted : const Color(0xFF0F766E),
           foregroundColor: Colors.white,
@@ -385,14 +369,8 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
         icon: _isUploading
             ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
             : Icon(atLimit ? Icons.lock_outline : Icons.upload_file_rounded),
-        label: Text(atLimit ? "Upgrade to Add More Resumes" : "Upload Resume (PDF)"),
+        label: Text(atLimit ? "Maximum Resumes Reached (3/3)" : "Upload Resume (PDF)"),
       ),
     );
   }
-}
-
-class _VaultData {
-  final String tier;
-  final List<Map<String, dynamic>> resumes;
-  _VaultData({required this.tier, required this.resumes});
 }
