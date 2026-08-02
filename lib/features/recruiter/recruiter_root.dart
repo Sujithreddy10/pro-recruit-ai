@@ -1,6 +1,8 @@
 import 'package:pro_recruit_ai/features/recruiter/screens/talent_match_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/ai_assistant_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/candidate_crm_screen.dart';
+import 'package:pro_recruit_ai/features/recruiter/screens/job_post_optimizer_screen.dart';
+import 'package:pro_recruit_ai/features/recruiter/screens/outreach_composer_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/trust_score_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/kpi_analytics_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/job_board_screen.dart';
@@ -756,8 +758,10 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const CollabHubScreen()))),
               _navTile("KPI Analytics", Icons.speed, Colors.pinkAccent, "Success Meta",
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const KPIAnalyticsScreen()))),
-              _comingSoonTile("Onboarding Pro", Icons.rocket_launch, Colors.deepOrangeAccent, "Day 0 Engine"),
-              _comingSoonTile("Resume Vault", Icons.cloud, Colors.lightBlue, "Storage Stats"),
+              _navTile("Job Post Optimizer", Icons.rocket_launch, Colors.deepOrangeAccent, "AI Clarity & Bias Check",
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const JobPostOptimizerScreen()))),
+              _navTile("Outreach Composer", Icons.cloud, Colors.lightBlue, "Personalized AI Messages",
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const OutreachComposerScreen()))),
               _navTile("Post a Job", Icons.add_business_outlined, Colors.deepOrange, "Manage Listings",
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const JobBoardScreen()))),
             ],
@@ -766,33 +770,6 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
         ],
       );
 
-  Widget _comingSoonTile(String t, IconData i, Color c, String s) => GestureDetector(
-        onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("$t is coming soon"), behavior: SnackBarBehavior.floating),
-        ),
-        child: Container(
-          padding: EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
-            borderRadius: AppBorderRadius.medium,
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Icon(i, color: c.withValues(alpha: 0.5), size: 32),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xs),
-                decoration: BoxDecoration(color: AppColors.border, borderRadius: AppBorderRadius.small),
-                child: Text("SOON", style: AppTypography.captionBold.copyWith(color: AppColors.textMuted)),
-              ),
-            ]),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(t, style: AppTypography.bodySmallBold.copyWith(color: AppColors.textMuted)),
-              Text(s, style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
-            ]),
-          ]),
-        ),
-      );
 
   // --- DRAWER (fixed: every item now navigates somewhere real) ---
   Widget _buildMasterDrawer() => Drawer(
