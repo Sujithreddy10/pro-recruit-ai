@@ -24,7 +24,10 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
   }
 
   void _reload() {
-    setState(() => _resumesFuture = _load());
+    final future = _load();
+    setState(() {
+      _resumesFuture = future;
+    });
   }
 
   Future<List<Map<String, dynamic>>> _load() async {
