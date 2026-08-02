@@ -2,6 +2,7 @@ import 'package:pro_recruit_ai/features/candidate/screens/candidate_profile_hub.
 import 'package:pro_recruit_ai/features/candidate/screens/resume_score_screen.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/skill_gap_screen.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/elite_certificates_screen.dart';
+import 'package:pro_recruit_ai/features/candidate/screens/mnc_question_bank_screen.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/resume_vault_screen.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/market_value_estimator_screen.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/pitch_analysis_screen.dart';
@@ -692,8 +693,9 @@ class _MainNavigationState extends State<MainNavigation> {
         _premiumFeatureCard("Resume Quality / ATS Score", Icons.analytics_outlined,
             "Real scoring based on your uploaded resume content.", Colors.indigo,
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const ResumeScoreScreen()))),
-        _comingSoonCard("MNC Interview Question Banks", Icons.menu_book_outlined,
-            "Curated question sets per company, tied to your applications.", AppColors.info),
+        _premiumFeatureCard("MNC Interview Question Banks", Icons.menu_book_outlined,
+            "Curated question sets per company, tied to your applications.", AppColors.info,
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const MNCQuestionBankScreen()))),
         _premiumFeatureCard("Pitch Analysis", Icons.mic_outlined,
             "Speak your pitch and get real pacing and filler-word feedback.", AppColors.error,
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const PitchAnalysisScreen()))),
