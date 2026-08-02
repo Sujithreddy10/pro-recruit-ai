@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import 'package:pro_recruit_ai/features/candidate/candidate_root.dart';
+import 'package:pro_recruit_ai/features/candidate/screens/candidate_onboarding_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/recruiter_root.dart';
 
 void main() async {
@@ -86,7 +87,7 @@ class AuthGateController extends StatelessWidget {
         return FutureBuilder<PostgrestMap?>(
           future: Supabase.instance.client
               .from('profiles')
-              .select('user_role')
+              .select('user_role, onboarding_completed')
               .eq('id', session.user.id)
               .maybeSingle(),
           builder: (context, snap) {
@@ -94,7 +95,9 @@ class AuthGateController extends StatelessWidget {
               return const Scaffold(body: Center(child: CircularProgressIndicator()));
             }
             final role = snap.data?['user_role'] ?? 'candidate';
-            return role == 'recruiter' ? const RecruiterRoot() : const CandidateRoot();
+            if (role == 'recruiter') return const RecruiterRoot();
+            final onboardingDone = snap.data?['onboarding_completed'] == true;
+            return onboardingDone ? const CandidateRoot() : const CandidateOnboardingScreen();
           },
         );
       },
