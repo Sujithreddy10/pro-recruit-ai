@@ -2,6 +2,7 @@ import 'package:pro_recruit_ai/features/candidate/screens/candidate_profile_hub.
 import 'package:pro_recruit_ai/features/candidate/screens/resume_score_screen.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/skill_gap_screen.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/elite_certificates_screen.dart';
+import 'package:pro_recruit_ai/features/candidate/screens/resume_vault_screen.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/market_value_estimator_screen.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/pitch_analysis_screen.dart';
 import 'dart:io';
@@ -260,6 +261,10 @@ class _MainNavigationState extends State<MainNavigation> {
           _drawerNavTile(Icons.folder_special_outlined, "Career Portfolio", const Color(0xFF16A34A), onTap: () {
             Navigator.pop(context);
             Navigator.push(context, MaterialPageRoute(builder: (c) => const EliteCertificatesScreen()));
+          }),
+          _drawerNavTile(Icons.inventory_2_outlined, "Resume Vault", const Color(0xFF0F766E), onTap: () {
+            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (c) => const ResumeVaultScreen()));
           }),
           const Divider(),
           AnimatedBuilder(
