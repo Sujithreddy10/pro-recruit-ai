@@ -74,9 +74,13 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
         'label': fileName.replaceAll('.pdf', '').replaceAll('_', ' '),
         'is_primary': resumes.isEmpty,
       });
-      Supabase.instance.client.functions.invoke('parse-resume', body: {'storagePath': storagePath}).catchError((e) {
-        debugPrint("parse-resume failed: $e");
-      });
+      () async {
+        try {
+          await Supabase.instance.client.functions.invoke('parse-resume', body: {'storagePath': storagePath});
+        } catch (e) {
+          debugPrint("parse-resume failed: $e");
+        }
+      }();
 
       _reload();
       if (mounted) {

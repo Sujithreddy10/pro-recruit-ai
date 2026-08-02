@@ -1198,9 +1198,13 @@ class _EliteProfileHubState extends State<EliteProfileHub> {
         'resume_path': storagePath,
         'resume_uploaded_at': DateTime.now().toIso8601String(),
       }).eq('id', userId);
-      Supabase.instance.client.functions.invoke('parse-resume', body: {'storagePath': storagePath}).catchError((e) {
-        debugPrint("parse-resume failed: $e");
-      });
+      () async {
+        try {
+          await Supabase.instance.client.functions.invoke('parse-resume', body: {'storagePath': storagePath});
+        } catch (e) {
+          debugPrint("parse-resume failed: $e");
+        }
+      }();
 
       if (mounted) {
         setState(() {
