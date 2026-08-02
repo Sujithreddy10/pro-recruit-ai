@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 
 class JobBoardScreen extends StatefulWidget {
@@ -22,7 +24,7 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
   Future<List<Map<String, dynamic>>> _fetchJobs() async {
     final data = await Supabase.instance.client
         .from('jobs')
-        .select('id, title, company, description, mode, salary_range')
+        .select('id, title, company, description, mode, salary_range, logo_url')
         .order('title');
     return List<Map<String, dynamic>>.from(data);
   }
@@ -39,6 +41,8 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
     final descCtrl = TextEditingController(text: existing?['description'] ?? '');
     final salaryCtrl = TextEditingController(text: existing?['salary_range'] ?? '');
     String selectedMode = existing?['mode'] ?? _modes.first;
+    String? logoUrl = existing?['logo_url'];
+    bool isUploadingLogo = false;
 
     final result = await showModalBottomSheet<bool>(
       context: context,
@@ -87,6 +91,60 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
                     fillColor: AppColors.surfaceVariant,
                     border: OutlineInputBorder(borderRadius: AppBorderRadius.small, borderSide: BorderSide.none),
                   ),
+                ),
+                SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: AppColors.surfaceVariant,
+                      backgroundImage: (logoUrl != null && logoUrl!.isNotEmpty) ? NetworkImage(logoUrl!) : null,
+                      child: (logoUrl == null || logoUrl!.isEmpty)
+                          ? Icon(Icons.apartment, color: AppColors.textMuted)
+                          : null,
+                    ),
+                    SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: isUploadingLogo
+                            ? null
+                            : () async {
+                                final result = await FilePicker.platform.pickFiles(
+                                  type: FileType.image,
+                                  withData: true,
+                                );
+                                if (result == null) return;
+                                setSheetState(() => isUploadingLogo = true);
+                                try {
+                                  final file = File(result.files.single.path!);
+                                  final fileName = result.files.single.name;
+                                  final path = '${DateTime.now().millisecondsSinceEpoch}_$fileName';
+                                  await Supabase.instance.client.storage
+                                      .from('company-logos')
+                                      .upload(path, file, fileOptions: const FileOptions(upsert: true));
+                                  final publicUrl = Supabase.instance.client.storage
+                                      .from('company-logos')
+                                      .getPublicUrl(path);
+                                  setSheetState(() {
+                                    logoUrl = publicUrl;
+                                    isUploadingLogo = false;
+                                  });
+                                } catch (e) {
+                                  setSheetState(() => isUploadingLogo = false);
+                                  if (ctx.mounted) {
+                                    ScaffoldMessenger.of(ctx).showSnackBar(
+                                      SnackBar(content: Text("Logo upload failed: $e"), backgroundColor: AppColors.error),
+                                    );
+                                  }
+                                }
+                              },
+                        icon: isUploadingLogo
+                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.upload, size: 18),
+                        label: Text(isUploadingLogo ? "Uploading..." : "Upload Company Logo"),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: AppSpacing.md),
                 TextField(
@@ -160,6 +218,7 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
         'description': descCtrl.text.trim(),
         'mode': selectedMode,
         'salary_range': salaryCtrl.text.trim(),
+        'logo_url': logoUrl,
       };
 
       if (existing == null) {

@@ -397,7 +397,8 @@ class _MainNavigationState extends State<MainNavigation> {
                     entry.value['company'] ?? 'N/A',
                     entry.value['mode'] ?? 'Hybrid',
                     entry.value['description'] ?? '',
-                    _jobAccentColors[entry.key % _jobAccentColors.length])),
+                    _jobAccentColors[entry.key % _jobAccentColors.length],
+                    logoUrl: entry.value['logo_url'])),
             ] else ...[
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: _fetchMyApplications(),
@@ -568,7 +569,7 @@ class _MainNavigationState extends State<MainNavigation> {
             ])));
   }
 
-  Widget _jobCard(String t, String c, String mode, String d, Color accent) {
+  Widget _jobCard(String t, String c, String mode, String d, Color accent, {String? logoUrl}) {
     bool applied = _appliedJobs.contains(t);
     return Container(
         margin: EdgeInsets.only(bottom: AppSpacing.lg),
@@ -582,11 +583,19 @@ class _MainNavigationState extends State<MainNavigation> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Container(
-                padding: EdgeInsets.all(AppSpacing.sm),
+                width: 44,
+                height: 44,
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                     gradient: LinearGradient(colors: [accent.withValues(alpha: 0.15), accent.withValues(alpha: 0.05)]),
                     borderRadius: AppBorderRadius.small),
-                child: Icon(Icons.business_rounded, color: accent, size: 24)),
+                child: (logoUrl != null && logoUrl.isNotEmpty)
+                    ? Image.network(
+                        logoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e, s) => Icon(Icons.business_rounded, color: accent, size: 24),
+                      )
+                    : Icon(Icons.business_rounded, color: accent, size: 24)),
             SizedBox(width: AppSpacing.md),
             Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
