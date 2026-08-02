@@ -134,7 +134,11 @@ Candidate Resume Summary: $resumeSummary
             ),
             SizedBox(height: AppSpacing.lg),
             if (_error != null)
-              Text(_error!, style: AppTypography.bodySmall.copyWith(color: AppColors.error)),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Text(_error!, style: AppTypography.bodySmall.copyWith(color: AppColors.error)),
+                ),
+              ),
             if (_draftMessage != null)
               Expanded(
                 child: ListView(
