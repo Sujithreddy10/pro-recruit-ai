@@ -27,7 +27,7 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
     'will', 'would', 'should', 'could', 'this', 'that', 'these', 'those', 'we', 'you', 'i',
     'as', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'our', 'your', 'their'
   };
-
+ 
   @override
   void initState() {
     super.initState();

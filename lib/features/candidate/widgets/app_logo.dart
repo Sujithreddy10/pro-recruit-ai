@@ -1,6 +1,7 @@
-import 'package:pro_recruit_ai/shared/common_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
+import 'package:pro_recruit_ai/shared/common_widgets.dart';
 
 class AppLogo extends StatelessWidget {
   final double size;
@@ -13,12 +14,9 @@ class AppLogo extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CustomPaint(
-          size: Size(size, size),
-          painter: AshWheelPainter(wheelColor: finalColor),
-        ),
-        SizedBox(width: AppSpacing.xs),
-        Text("Hylo", style: AppTypography.headlineLarge.copyWith(color: finalColor, fontSize: size)),
+        CustomPaint(size: Size(size, size), painter: AshWheelPainter(wheelColor: finalColor)),
+        SizedBox(width: AppSpacing.sm),
+        Text("Hylo", style: GoogleFonts.lobster(color: finalColor, fontSize: size)),
       ],
     );
   }

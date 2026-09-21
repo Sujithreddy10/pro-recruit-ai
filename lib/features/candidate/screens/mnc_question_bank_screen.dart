@@ -86,7 +86,7 @@ Company: ${app['company_name'] ?? ''}
     return Scaffold(
       backgroundColor: AppColors.surfaceAlt,
       appBar: AppBar(
-        title: Text("MNC Question Bank", style: AppTypography.titleMedium.copyWith(color: AppColors.info)),
+        title: Text("Interview Question Bank", style: AppTypography.titleMedium.copyWith(color: AppColors.info)),
         backgroundColor: AppColors.surface,
         iconTheme: IconThemeData(color: AppColors.info),
         elevation: 0,
@@ -114,7 +114,7 @@ Company: ${app['company_name'] ?? ''}
                 return DropdownButtonFormField<Map<String, dynamic>>(
                   decoration: InputDecoration(border: OutlineInputBorder(borderRadius: AppBorderRadius.small)),
                   isExpanded: true,
-                  value: _selectedApplication,
+                  initialValue: _selectedApplication,
                   items: apps
                       .map((a) => DropdownMenuItem<Map<String, dynamic>>(
                             value: a,
