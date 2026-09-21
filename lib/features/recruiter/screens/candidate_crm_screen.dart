@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
+import 'package:pro_recruit_ai/shared/chat_screen.dart';
 
 class CandidateCRMScreen extends StatefulWidget {
   const CandidateCRMScreen({super.key});
@@ -12,6 +13,8 @@ class CandidateCRMScreen extends StatefulWidget {
 
 class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
   late Future<List<Map<String, dynamic>>> _candidatesFuture;
+  final Set<String> _viewedCandidateIds = {};
+  final Set<String> _savedCandidateIds = {};
   String _statusFilter = 'all';
   String _searchQuery = '';
 
@@ -21,14 +24,98 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
   void initState() {
     super.initState();
     _candidatesFuture = _fetchCandidates();
+    _candidatesFuture.then((rows) => _trackProfileViews(rows));
+    _loadSavedCandidateIds();
   }
 
   Future<List<Map<String, dynamic>>> _fetchCandidates() async {
     final data = await Supabase.instance.client
         .from('applications')
-        .select('id, job_title, company_name, status, created_at, profiles(id, full_name, resume_path)')
+        .select('id, job_title, company_name, status, created_at, recruiter_notes, recruiter_rating, profiles(id, full_name, resume_path)')
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(data);
+  }
+
+  void _trackProfileViews(List<Map<String, dynamic>> candidates) {
+    final recruiterId = Supabase.instance.client.auth.currentUser?.id;
+    if (recruiterId == null) return;
+    for (final row in candidates) {
+      final profile = row['profiles'] as Map<String, dynamic>? ?? {};
+      final candidateId = (profile['id'] ?? '').toString();
+      if (candidateId.isEmpty || _viewedCandidateIds.contains(candidateId)) continue;
+      _viewedCandidateIds.add(candidateId);
+      Supabase.instance.client.from('profile_views').insert({
+        'candidate_id': candidateId,
+        'recruiter_id': recruiterId,
+      }).then((_) {}, onError: (_) {});
+    }
+  }
+
+  Future<void> _loadSavedCandidateIds() async {
+    final ids = await _fetchSavedCandidateIds();
+    if (mounted) {
+      setState(() {
+        _savedCandidateIds
+          ..clear()
+          ..addAll(ids);
+      });
+    }
+  }
+
+  Future<Set<String>> _fetchSavedCandidateIds() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return {};
+    try {
+      final data = await Supabase.instance.client
+          .from('saved_candidates')
+          .select('candidate_id')
+          .eq('recruiter_id', userId);
+      return Set<String>.from(
+        List<Map<String, dynamic>>.from(data).map((r) => r['candidate_id'].toString()),
+      );
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Future<void> _toggleSaveCandidate(String candidateId) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null || candidateId.isEmpty) return;
+    final isSaved = _savedCandidateIds.contains(candidateId);
+    setState(() {
+      if (isSaved) {
+        _savedCandidateIds.remove(candidateId);
+      } else {
+        _savedCandidateIds.add(candidateId);
+      }
+    });
+    try {
+      if (isSaved) {
+        await Supabase.instance.client
+            .from('saved_candidates')
+            .delete()
+            .eq('recruiter_id', userId)
+            .eq('candidate_id', candidateId);
+      } else {
+        await Supabase.instance.client.from('saved_candidates').insert({
+          'recruiter_id': userId,
+          'candidate_id': candidateId,
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          if (isSaved) {
+            _savedCandidateIds.add(candidateId);
+          } else {
+            _savedCandidateIds.remove(candidateId);
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to update saved candidates: $e")),
+        );
+      }
+    }
   }
 
   Future<void> _viewResume(String? resumePath) async {
@@ -67,6 +154,7 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
         );
         setState(() {
           _candidatesFuture = _fetchCandidates();
+          _candidatesFuture.then((rows) => _trackProfileViews(rows));
         });
       }
     } catch (e) {
@@ -74,6 +162,78 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed: $e"), backgroundColor: AppColors.error),
         );
+      }
+    }
+  }
+
+  Future<void> _editNotesAndRatingDialog(Map<String, dynamic> c) async {
+    final notesCtrl = TextEditingController(text: c['recruiter_notes'] ?? '');
+    int rating = (c['recruiter_rating'] as int?) ?? 0;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
+          title: Text("Notes & Rating", style: AppTypography.titleMedium),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Rating", style: AppTypography.bodySmallBold),
+                SizedBox(height: AppSpacing.xs),
+                Row(
+                  children: List.generate(
+                    5,
+                    (i) => IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(
+                        i < rating ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 28,
+                      ),
+                      onPressed: () => setDialogState(() => rating = i + 1),
+                    ),
+                  ),
+                ),
+                SizedBox(height: AppSpacing.md),
+                TextField(
+                  controller: notesCtrl,
+                  maxLines: 5,
+                  decoration: const InputDecoration(
+                    labelText: "Private Notes",
+                    hintText: "Only visible to your recruiting team",
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
+            ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Save")),
+          ],
+        ),
+      ),
+    );
+    if (result == true) {
+      try {
+        await Supabase.instance.client.from('applications').update({
+          'recruiter_notes': notesCtrl.text.trim(),
+          'recruiter_rating': rating == 0 ? null : rating,
+        }).eq('id', c['id']);
+        if (mounted) {
+          setState(() {
+            _candidatesFuture = _fetchCandidates();
+            _candidatesFuture.then((rows) => _trackProfileViews(rows));
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to save: $e"), backgroundColor: AppColors.error),
+          );
+        }
       }
     }
   }
@@ -90,6 +250,43 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
         return AppColors.error;
       default:
         return AppColors.warning;
+    }
+  }
+
+  Future<void> _startOrOpenConversation(String candidateId, String candidateName, String jobTitle, String companyName) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null || candidateId.isEmpty) return;
+    try {
+      final row = await Supabase.instance.client
+          .from('conversations')
+          .upsert(
+            {
+              'candidate_id': candidateId,
+              'recruiter_id': userId,
+              'job_title': jobTitle,
+              'company_name': companyName,
+            },
+            onConflict: 'candidate_id,recruiter_id',
+          )
+          .select('id')
+          .single();
+      final conversationId = row['id'].toString();
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (c) => ChatScreen(
+              conversationId: conversationId,
+              otherPartyName: candidateName,
+              contextLabel: "$jobTitle · $companyName",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to open conversation: $e")));
+      }
     }
   }
 
@@ -261,16 +458,63 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
                                         child: Text(status.toUpperCase().replaceAll('_', ' '),
                                             style: AppTypography.captionBold.copyWith(color: color)),
                                       ),
+                                      if ((c['recruiter_rating'] ?? 0) > 0) ...[
+                                        SizedBox(height: AppSpacing.xs),
+                                        Row(
+                                          children: List.generate(
+                                            5,
+                                            (i) => Icon(
+                                              i < (c['recruiter_rating'] as int) ? Icons.star : Icons.star_border,
+                                              size: 14,
+                                              color: Colors.amber,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.description_outlined, color: Colors.deepOrange, size: 20),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: const Icon(Icons.description_outlined, color: Colors.deepOrange, size: 16),
                                   onPressed: () => _viewResume(resumePath),
                                   tooltip: "View Resume",
                                 ),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(Icons.chat_bubble_outline, color: AppColors.primary, size: 16),
+                                  onPressed: () => _startOrOpenConversation(
+                                    (profile?['id'] ?? '').toString(),
+                                    name,
+                                    (c['job_title'] ?? '').toString(),
+                                    (c['company_name'] ?? '').toString(),
+                                  ),
+                                  tooltip: 'Message Candidate',
+                                ),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(Icons.rate_review_outlined, color: Colors.amber.shade800, size: 16),
+                                  onPressed: () => _editNotesAndRatingDialog(c),
+                                  tooltip: 'Notes & Rating',
+                                ),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(
+                                    _savedCandidateIds.contains((profile?['id'] ?? '').toString()) ? Icons.bookmark : Icons.bookmark_border,
+                                    color: AppColors.primary,
+                                    size: 16,
+                                  ),
+                                  onPressed: () => _toggleSaveCandidate((profile?['id'] ?? '').toString()),
+                                  tooltip: 'Save Candidate',
+                                ),
                                 if (status == 'shortlisted')
                                   IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                     icon: Icon(Icons.send, color: AppColors.info, size: 20),
                                     onPressed: () => _sendOffer(c['id']),
                                     tooltip: "Send Offer",

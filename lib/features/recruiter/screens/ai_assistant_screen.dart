@@ -164,7 +164,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                 if (jobs.isEmpty) return Text("No jobs found.", style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted));
                 return DropdownButtonFormField<Map<String, dynamic>>(
                   decoration: InputDecoration(border: OutlineInputBorder(borderRadius: AppBorderRadius.small)),
-                  value: _selectedJob,
+                  initialValue: _selectedJob,
                   isExpanded: true,
                   items: jobs
                       .map((j) => DropdownMenuItem<Map<String, dynamic>>(
@@ -192,7 +192,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                 if (apps.isEmpty) return Text("No applications found.", style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted));
                 return DropdownButtonFormField<Map<String, dynamic>>(
                   decoration: InputDecoration(border: OutlineInputBorder(borderRadius: AppBorderRadius.small)),
-                  value: _selectedApplication,
+                  initialValue: _selectedApplication,
                   items: apps.map((a) {
                     final name = a['profiles']?['full_name'] ?? 'Unknown';
                     return DropdownMenuItem<Map<String, dynamic>>(

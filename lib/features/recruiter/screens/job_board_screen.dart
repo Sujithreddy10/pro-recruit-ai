@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -24,9 +25,68 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
   Future<List<Map<String, dynamic>>> _fetchJobs() async {
     final data = await Supabase.instance.client
         .from('jobs')
-        .select('id, title, company, description, mode, salary_range, logo_url')
+        .select('id, title, company, description, mode, salary_range, logo_url, view_count')
         .order('title');
     return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<int> _countApplications(String title, String company) async {
+    try {
+      final res = await Supabase.instance.client
+          .from('applications')
+          .select()
+          .eq('job_title', title)
+          .eq('company_name', company)
+          .count(CountOption.exact);
+      return res.count;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<void> _showJobAnalytics(Map<String, dynamic> j) async {
+    final views = (j['view_count'] as int?) ?? 0;
+    final applications = await _countApplications(j['title'] ?? '', j['company'] ?? '');
+    final hasViews = views > 0 && applications <= views;
+    final conversion = hasViews ? (applications / views * 100) : null;
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
+        title: Text(j['title'] ?? 'Job Analytics', style: AppTypography.titleMedium),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _analyticsRow(Icons.visibility_outlined, "Views", "$views"),
+            SizedBox(height: AppSpacing.sm),
+            _analyticsRow(Icons.people_outline, "Applications", "$applications"),
+            SizedBox(height: AppSpacing.sm),
+            _analyticsRow(Icons.trending_up, "Conversion Rate", hasViews ? "${conversion!.toStringAsFixed(1)}%" : "N/A"),
+            if (!hasViews) ...[
+              SizedBox(height: AppSpacing.sm),
+              Text("View tracking started recently — older applications may predate it.",
+                  style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Close")),
+        ],
+      ),
+    );
+  }
+
+  Widget _analyticsRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: Colors.deepOrange),
+        SizedBox(width: AppSpacing.sm),
+        Expanded(child: Text(label, style: AppTypography.bodyMedium)),
+        Text(value, style: AppTypography.bodyMediumBold),
+      ],
+    );
   }
 
   void _refresh() {
@@ -40,6 +100,7 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
     final companyCtrl = TextEditingController(text: existing?['company'] ?? '');
     final descCtrl = TextEditingController(text: existing?['description'] ?? '');
     final salaryCtrl = TextEditingController(text: existing?['salary_range'] ?? '');
+    final locationCtrl = TextEditingController(text: existing?['location'] ?? '');
     String selectedMode = existing?['mode'] ?? _modes.first;
     String? logoUrl = existing?['logo_url'];
     bool isUploadingLogo = false;
@@ -93,6 +154,19 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
                   ),
                 ),
                 SizedBox(height: AppSpacing.md),
+                TextField(
+                  controller: locationCtrl,
+                  style: TextStyle(color: AppColors.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: "Location (e.g. Hyderabad)",
+                    labelStyle: TextStyle(color: AppColors.textMuted),
+                    prefixIcon: const Icon(Icons.location_on_outlined, color: Colors.deepOrange, size: 18),
+                    filled: true,
+                    fillColor: AppColors.surfaceVariant,
+                    border: OutlineInputBorder(borderRadius: AppBorderRadius.small, borderSide: BorderSide.none),
+                  ),
+                ),
+                SizedBox(height: AppSpacing.md),
                 Row(
                   children: [
                     CircleAvatar(
@@ -115,13 +189,22 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
                                 );
                                 if (result == null) return;
                                 setSheetState(() => isUploadingLogo = true);
+                                final session = Supabase.instance.client.auth.currentSession;
+                                debugPrint("LOGO_DEBUG userId=${Supabase.instance.client.auth.currentUser?.id} hasSession=${session != null} tokenExpired=${session?.isExpired}");
                                 try {
-                                  final file = File(result.files.single.path!);
                                   final fileName = result.files.single.name;
                                   final path = '${DateTime.now().millisecondsSinceEpoch}_$fileName';
-                                  await Supabase.instance.client.storage
-                                      .from('company-logos')
-                                      .upload(path, file, fileOptions: const FileOptions(upsert: true));
+                                  if (kIsWeb) {
+                                    final bytes = result.files.single.bytes!;
+                                    await Supabase.instance.client.storage
+                                        .from('company-logos')
+                                        .uploadBinary(path, bytes, fileOptions: const FileOptions(upsert: true));
+                                  } else {
+                                    final file = File(result.files.single.path!);
+                                    await Supabase.instance.client.storage
+                                        .from('company-logos')
+                                        .upload(path, file, fileOptions: const FileOptions(upsert: true));
+                                  }
                                   final publicUrl = Supabase.instance.client.storage
                                       .from('company-logos')
                                       .getPublicUrl(path);
@@ -130,6 +213,12 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
                                     isUploadingLogo = false;
                                   });
                                 } catch (e) {
+                                  debugPrint("LOGO_DEBUG exception runtimeType=${e.runtimeType}");
+                                  if (e is StorageException) {
+                                    debugPrint("LOGO_DEBUG StorageException statusCode=${e.statusCode} error=${e.error} message=${e.message}");
+                                  } else {
+                                    debugPrint("LOGO_DEBUG raw=$e");
+                                  }
                                   setSheetState(() => isUploadingLogo = false);
                                   if (ctx.mounted) {
                                     ScaffoldMessenger.of(ctx).showSnackBar(
@@ -217,12 +306,17 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
         'company': companyCtrl.text.trim(),
         'description': descCtrl.text.trim(),
         'mode': selectedMode,
+        'location': locationCtrl.text.trim(),
         'salary_range': salaryCtrl.text.trim(),
         'logo_url': logoUrl,
       };
 
       if (existing == null) {
-        await Supabase.instance.client.from('jobs').insert(payload);
+        final insertPayload = {
+          ...payload,
+          'recruiter_id': Supabase.instance.client.auth.currentUser?.id,
+        };
+        await Supabase.instance.client.from('jobs').insert(insertPayload);
       } else {
         await Supabase.instance.client.from('jobs').update(payload).eq('id', existing['id']);
       }
@@ -403,12 +497,23 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
                             Row(
                               children: [
                                 IconButton(
-                                  icon: Icon(Icons.edit_outlined, color: AppColors.info, size: 20),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(Icons.bar_chart_outlined, color: Colors.deepOrange, size: 16),
+                                  onPressed: () => _showJobAnalytics(j),
+                                  tooltip: "Analytics",
+                                ),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(Icons.edit_outlined, color: AppColors.info, size: 16),
                                   onPressed: () => _openJobForm(existing: j),
                                   tooltip: "Edit",
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.delete_outline, color: AppColors.error, size: 20),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(Icons.delete_outline, color: AppColors.error, size: 16),
                                   onPressed: () => _confirmDelete(j),
                                   tooltip: "Delete",
                                 ),

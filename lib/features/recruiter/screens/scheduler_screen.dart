@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
@@ -356,7 +357,15 @@ class _SchedulerScreenState extends State<SchedulerScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(s['job_title'] ?? 'N/A', style: AppTypography.bodyMediumBold),
+                              Expanded(
+                                child: Text(
+                                  s['job_title'] ?? 'N/A',
+                                  style: AppTypography.bodyMediumBold,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                              SizedBox(width: AppSpacing.sm),
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                                 decoration: AppDecorations.pill(AppColors.success),

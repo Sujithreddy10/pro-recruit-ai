@@ -34,10 +34,14 @@ class _OutreachComposerScreenState extends State<OutreachComposerScreen> {
       _error = null;
       _draftMessage = null;
     });
+
+    final app = _selectedApplication!;
+    final profile = app['profiles'] as Map<String, dynamic>?;
+    final candidateName = profile?['full_name'] ?? 'there';
+    final jobTitle = (app['job_title'] ?? 'this role').toString();
+    final company = (app['company_name'] ?? 'our team').toString();
+
     try {
-      final app = _selectedApplication!;
-      final profile = app['profiles'] as Map<String, dynamic>?;
-      final candidateName = profile?['full_name'] ?? 'there';
       final resumeText = (profile?['resume_text'] ?? '').toString();
       final resumeSummary = resumeText.isEmpty
           ? 'Not available'
@@ -47,8 +51,8 @@ class _OutreachComposerScreenState extends State<OutreachComposerScreen> {
 Write a warm, professional, personalized outreach message (3-4 sentences) from a recruiter to a candidate about an open role. Reference specific skills or experience from their resume where relevant. Avoid generic filler language. Do not include a subject line, just the message body.
 
 Candidate Name: $candidateName
-Job Title: ${app['job_title'] ?? ''}
-Company: ${app['company_name'] ?? ''}
+Job Title: $jobTitle
+Company: $company
 Candidate Resume Summary: $resumeSummary
 ''';
 
@@ -57,12 +61,41 @@ Candidate Resume Summary: $resumeSummary
         body: {'prompt': prompt},
       );
 
-      final text = (response.data?['text'] ?? '').toString();
-      if (mounted) setState(() => _draftMessage = text);
+      final text = (response.data?['text'] ?? '').toString().trim();
+      if (response.status == 200 && text.isNotEmpty) {
+        setState(() {
+          _draftMessage = text;
+          _isGenerating = false;
+        });
+        return;
+      }
+      throw 'Service unavailable';
     } catch (e) {
-      if (mounted) setState(() => _error = "Couldn't generate outreach: $e");
-    } finally {
-      if (mounted) setState(() => _isGenerating = false);
+      // Graceful fallback when Gemini is busy (503/429)
+      final fallbackDraft = '''Hi $candidateName,
+
+I came across your profile and was really impressed by your background in $jobTitle. We have an exciting opening at $company that aligns closely with your skills.
+
+Would you be open to a brief 10-minute introductory call this week to explore this role together?
+
+Best regards,
+Hiring Team''';
+
+      setState(() {
+        _draftMessage = fallbackDraft;
+        _error = null;
+        _isGenerating = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("AI high-traffic period. Standard executive template generated."),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -93,7 +126,7 @@ Candidate Resume Summary: $resumeSummary
                 return DropdownButtonFormField<Map<String, dynamic>>(
                   decoration: InputDecoration(border: OutlineInputBorder(borderRadius: AppBorderRadius.small)),
                   isExpanded: true,
-                  value: _selectedApplication,
+                  initialValue: _selectedApplication,
                   items: apps.map((a) {
                     final profile = a['profiles'] as Map<String, dynamic>?;
                     final name = profile?['full_name'] ?? 'Unknown';

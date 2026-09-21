@@ -1,6 +1,9 @@
 import 'package:pro_recruit_ai/features/recruiter/screens/talent_match_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/ai_assistant_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/candidate_crm_screen.dart';
+import 'package:pro_recruit_ai/features/recruiter/screens/messages_list_screen.dart';
+import 'screens/saved_candidates_screen.dart';
+import 'package:pro_recruit_ai/shared/notifications_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/job_post_optimizer_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/outreach_composer_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/screens/trust_score_screen.dart';
@@ -110,19 +113,25 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
     }
   }
 
-  Future<Map<String, int>> _fetchOrgStats() async {
+  Future<Map<String, int>>? _orgStatsFuture;
+
+  Future<Map<String, int>> _fetchOrgStats() {
+    return _orgStatsFuture ??= _loadOrgStats();
+  }
+
+  Future<Map<String, int>> _loadOrgStats() async {
     final client = Supabase.instance.client;
 
-    final recruiters = await client.from('profiles').select('id').eq('user_role', 'recruiter');
-    final candidates = await client.from('profiles').select('id').eq('user_role', 'candidate');
-    final jobs = await client.from('jobs').select('id');
-    final applications = await client.from('applications').select('id');
+    final recruiters = await client.from('profiles').select().eq('user_role', 'recruiter').count(CountOption.exact);
+    final candidates = await client.from('profiles').select().eq('user_role', 'candidate').count(CountOption.exact);
+    final jobs = await client.from('jobs').select().count(CountOption.exact);
+    final applications = await client.from('applications').select().count(CountOption.exact);
 
     return {
-      'recruiters': List.from(recruiters).length,
-      'candidates': List.from(candidates).length,
-      'jobs': List.from(jobs).length,
-      'applications': List.from(applications).length,
+      'recruiters': recruiters.count,
+      'candidates': candidates.count,
+      'jobs': jobs.count,
+      'applications': applications.count,
     };
   }
 
@@ -219,6 +228,7 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
       extendBodyBehindAppBar: true,
       drawer: _buildMasterDrawer(),
       appBar: AppBar(
+        actions: [const NotificationBell()],
         leading: IconButton(
           icon: Icon(Icons.menu_open_rounded, color: AppColors.primary),
           onPressed: () => _scafKey.currentState!.openDrawer(),
@@ -735,7 +745,11 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
+            crossAxisCount: MediaQuery.of(context).size.width > 1100
+                ? 6
+                : MediaQuery.of(context).size.width > 700
+                    ? 4
+                    : 2,
             mainAxisSpacing: AppSpacing.md,
             crossAxisSpacing: AppSpacing.md,
             childAspectRatio: 1.1,
@@ -814,6 +828,18 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
               MaterialPageRoute(builder: (c) => const UsageCreditsScreen()),
             );
           }),
+
+          _drawerItem("Messages", Icons.chat_bubble_outline, const Color(0xFF7C3AED), onTap: () {
+            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (c) => const RecruiterMessagesListScreen()));
+          }),
+          _drawerItem("Saved Candidates", Icons.bookmark_outline, const Color(0xFFDB2777), onTap: () {
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (c) => const RecruiterSavedCandidatesScreen()),
+            );
+          }),
           const Divider(),
           AnimatedBuilder(
             animation: ThemeController.instance,
@@ -832,6 +858,7 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
             leading: const Icon(Icons.logout, color: Color(0xFFDC2626)),
             title: const Text("Logout", style: TextStyle(color: Colors.black87, fontSize: 13)),
             onTap: () async {
+              Navigator.pop(context);
               await Supabase.instance.client.auth.signOut();
             },
           ),
