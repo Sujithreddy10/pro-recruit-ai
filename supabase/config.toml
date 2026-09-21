@@ -428,3 +428,11 @@ entrypoint = "./functions/score-resume/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/score-resume/*.html" ]
+
+[functions.identity-verify-finalize]
+enabled = true
+verify_jwt = false
+
+[functions.identity-verify-init]
+enabled = true
+verify_jwt = true
