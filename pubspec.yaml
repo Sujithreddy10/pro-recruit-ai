@@ -31,6 +31,8 @@ dependencies:
   # File Handling
   file_picker: ^8.1.2
   url_launcher: ^6.3.1
+  sandbox_digilocker_sdk: ^1.0.1
+  shared_preferences: ^2.5.5
 dev_dependencies:
   flutter_test:
     sdk: flutter

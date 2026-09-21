@@ -1,6 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 import 'package:pro_recruit_ai/shared/common_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +12,42 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:pro_recruit_ai/features/candidate/candidate_root.dart';
 import 'package:pro_recruit_ai/features/candidate/screens/candidate_onboarding_screen.dart';
 import 'package:pro_recruit_ai/features/recruiter/recruiter_root.dart';
+import 'package:pro_recruit_ai/shared/chat_screen.dart';
+import 'package:pro_recruit_ai/shared/notifications_screen.dart';
+
+final navigatorKey = GlobalKey<NavigatorState>();
+
+Future<void> _handleNotificationClick(Map<String, dynamic> data) async {
+  final navState = navigatorKey.currentState;
+  if (navState == null) return;
+  if (data['conversation_id'] != null) {
+    final conversationId = data['conversation_id'].toString();
+    String otherPartyName = "Chat";
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      final convo = await Supabase.instance.client
+          .from('conversations')
+          .select('candidate_id, recruiter_id, candidate:profiles!candidate_id(full_name), recruiter:profiles!recruiter_id(full_name)')
+          .eq('id', conversationId)
+          .maybeSingle();
+      if (convo != null && userId != null) {
+        final isCandidate = convo['candidate_id'] == userId;
+        final other = isCandidate ? convo['recruiter'] : convo['candidate'];
+        otherPartyName = (other as Map<String, dynamic>?)?['full_name'] ?? "Chat";
+      }
+    } catch (_) {}
+    navState.push(
+      MaterialPageRoute(
+        builder: (c) => ChatScreen(conversationId: conversationId, otherPartyName: otherPartyName),
+      ),
+    );
+  } else {
+    navState.push(
+      MaterialPageRoute(builder: (c) => const NotificationsScreen()),
+    );
+  }
+}
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +62,24 @@ void main() async {
 
   await Supabase.initialize(
     url: cleanUrl,
-    anonKey: cleanKey,
+    publishableKey: cleanKey,
   );
 
-  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-  OneSignal.initialize("fc16b84a-85ff-4fce-b472-debcd8bb09e3");
-  OneSignal.Notifications.requestPermission(true);
+  if (!kIsWeb) {
+    OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+    String oneSignalId = dotenv.get('ONESIGNAL_APP_ID', fallback: "");
+  oneSignalId = oneSignalId.replaceAll("'", "").replaceAll('"', "").trim();
+  if (oneSignalId.isNotEmpty) {
+    OneSignal.initialize(oneSignalId);
+  }
+    OneSignal.Notifications.requestPermission(true);
+    OneSignal.Notifications.addClickListener((event) {
+      final data = event.notification.additionalData;
+      if (data != null) {
+        _handleNotificationClick(Map<String, dynamic>.from(data));
+      }
+    });
+  }
 
   runApp(const HyloApp());
 }
@@ -60,6 +110,7 @@ class _HyloAppState extends State<HyloApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       key: ValueKey(ThemeController.instance.isDarkMode),
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Hylo',
       theme: AppTheme.light,
@@ -227,7 +278,7 @@ class _AuthWelcomeScreenState extends State<AuthWelcomeScreen> with SingleTicker
                     ),
                     SizedBox(height: AppSpacing.xxxl + AppSpacing.md),
                     Text(
-                      "MADE IN TELANGANA",
+                      "MADE IN INDIA",
                       style: AppTypography.captionBold.copyWith(color: AppColors.textLight, letterSpacing: 2),
                     ),
                     SizedBox(height: AppSpacing.lg),
@@ -281,7 +332,7 @@ class _LoginScreenState extends State<LoginScreen> {
           },
         );
         if (res.user != null) {
-          OneSignal.login(res.user!.id);
+          if (!kIsWeb) OneSignal.login(res.user!.id);
           await Future.delayed(const Duration(milliseconds: 500));
           try {
             await client.from('profiles').upsert({
@@ -299,7 +350,7 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _passCtrl.text.trim(),
         );
         if (signInRes.user != null) {
-          OneSignal.login(signInRes.user!.id);
+          if (!kIsWeb) OneSignal.login(signInRes.user!.id);
         }
       }
       if (mounted) Navigator.popUntil(context, (r) => r.isFirst);
@@ -412,9 +463,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: AppSpacing.xxl + AppSpacing.md),
                   Center(
-                    child: Text(
-                      "MADE IN TELANGANA",
-                      style: AppTypography.captionBold.copyWith(color: AppColors.textLight, letterSpacing: 2),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "MADE IN INDIA",
+                          style: AppTypography.captionBold.copyWith(color: AppColors.textLight, letterSpacing: 2),
+                        ),
+                      ],
                     ),
                   ),
                 ],

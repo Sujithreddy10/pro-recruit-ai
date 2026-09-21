@@ -258,6 +258,7 @@ abstract final class AppTheme {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primary,
+          brightness: ThemeController.instance.isDarkMode ? Brightness.dark : Brightness.light,
           primary: AppColors.primary,
           surface: AppColors.surface,
           error: AppColors.error,
