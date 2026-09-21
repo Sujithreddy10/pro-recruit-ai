@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pro_recruit_ai/features/recruiter/widgets/recruiter_pipeline_cards.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 
 class PipelineDashboardTab extends StatefulWidget {
@@ -34,64 +35,6 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
     return counts;
   }
 
-  Widget _pipelineHeader(int total) => Container(
-        padding: EdgeInsets.all(AppSpacing.xl),
-        decoration: AppDecorations.primaryCard,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "LIVE PIPELINE",
-              style: AppTypography.sectionHeader.copyWith(color: Colors.cyanAccent),
-            ),
-            SizedBox(height: AppSpacing.xs),
-            Text(
-              "Total Applications: $total",
-              style: AppTypography.headlineLarge.copyWith(
-                color: AppColors.textLight,
-                fontSize: 18,
-              ),
-            ),
-            Text(
-              "Real-time candidate status across all roles",
-              style: AppTypography.caption.copyWith(color: Colors.white60),
-            ),
-          ],
-        ),
-      );
-
-  Widget _pipelineStageCard(String title, String count, Color color, double progress) => Container(
-        margin: EdgeInsets.only(bottom: AppSpacing.md),
-        padding: EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: AppBorderRadius.medium,
-          boxShadow: [BoxShadow(color: color.withValues(alpha: 0.1), blurRadius: 10)],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(title, style: AppTypography.bodyMediumBold),
-                Text(count, style: AppTypography.bodySmallBold.copyWith(color: color)),
-              ],
-            ),
-            SizedBox(height: AppSpacing.sm),
-            ClipRRect(
-              borderRadius: AppBorderRadius.small,
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 8,
-                backgroundColor: color.withValues(alpha: 0.1),
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      );
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -110,30 +53,32 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
         final total = counts.values.fold(0, (a, b) => a + b);
         double ratio(int v) => total == 0 ? 0 : v / total;
 
-        return ListView(
-          padding: EdgeInsets.fromLTRB(AppSpacing.lg, 110, AppSpacing.lg, AppSpacing.lg),
-          children: [
-            _pipelineHeader(total),
-            SizedBox(height: AppSpacing.xl),
-            _pipelineStageCard(
-              "Applied (Awaiting Review)",
-              "${counts['applied']} Candidates",
-              AppColors.info,
-              ratio(counts['applied']!),
-            ),
-            _pipelineStageCard(
-              "Shortlisted",
-              "${counts['shortlisted']} Candidates",
-              AppColors.success,
-              ratio(counts['shortlisted']!),
-            ),
-            _pipelineStageCard(
-              "Rejected",
-              "${counts['rejected']} Candidates",
-              AppColors.error,
-              ratio(counts['rejected']!),
-            ),
-          ],
+        return SafeArea(
+          child: ListView(
+            padding: EdgeInsets.all(AppSpacing.lg),
+            children: [
+              RecruiterPipelineHeader(total: total),
+              SizedBox(height: AppSpacing.xl),
+              RecruiterPipelineStageCard(
+                title: "Applied (Awaiting Review)",
+                count: "${counts['applied']} Candidates",
+                accentColor: AppColors.info,
+                progress: ratio(counts['applied']!),
+              ),
+              RecruiterPipelineStageCard(
+                title: "Shortlisted",
+                count: "${counts['shortlisted']} Candidates",
+                accentColor: AppColors.success,
+                progress: ratio(counts['shortlisted']!),
+              ),
+              RecruiterPipelineStageCard(
+                title: "Rejected",
+                count: "${counts['rejected']} Candidates",
+                accentColor: AppColors.error,
+                progress: ratio(counts['rejected']!),
+              ),
+            ],
+          ),
         );
       },
     );
