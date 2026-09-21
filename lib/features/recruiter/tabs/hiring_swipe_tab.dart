@@ -1,0 +1,228 @@
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:pro_recruit_ai/shared/app_design_system.dart';
+import 'package:pro_recruit_ai/features/recruiter/widgets/recruiter_header_stats.dart';
+
+class HiringSwipeTab extends StatefulWidget {
+  const HiringSwipeTab({super.key});
+
+  @override
+  State<HiringSwipeTab> createState() => _HiringSwipeTabState();
+}
+
+class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAliveClientMixin {
+  int _currentCandidateIdx = 0;
+  late Future<List<Map<String, dynamic>>> _applicantsFuture;
+
+  final List<Color> _candidateColors = [
+    AppColors.warning,
+    AppColors.info,
+    Colors.teal,
+    Colors.purple,
+    AppColors.success,
+  ];
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _applicantsFuture = _fetchApplicants();
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchApplicants() async {
+    final data = await Supabase.instance.client
+        .from('applications')
+        .select('*, profiles(full_name, resume_path)')
+        .eq('status', 'applied')
+        .order('created_at');
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<void> _viewResume(String? resumePath) async {
+    if (resumePath == null || resumePath.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No resume uploaded by this candidate.")),
+      );
+      return;
+    }
+    try {
+      final signedUrl = await Supabase.instance.client.storage
+          .from('resumes')
+          .createSignedUrl(resumePath, 60 * 5);
+
+      final uri = Uri.parse(signedUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not open resume URL';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to load resume: $e"), backgroundColor: AppColors.error),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateApplicationStatus(int applicationId, String newStatus) async {
+    try {
+      await Supabase.instance.client
+          .from('applications')
+          .update({'status': newStatus, 'status_updated_at': DateTime.now().toIso8601String()})
+          .eq('id', applicationId);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to update status: $e"), backgroundColor: AppColors.error),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleDecision(bool approved, int applicationId) async {
+    final newStatus = approved ? 'shortlisted' : 'rejected';
+    await _updateApplicationStatus(applicationId, newStatus);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(approved ? "Candidate Shortlisted" : "Candidate Archived"),
+        backgroundColor: approved ? AppColors.success : AppColors.error,
+        duration: const Duration(milliseconds: 800),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    setState(() {
+      _currentCandidateIdx = 0;
+      _applicantsFuture = _fetchApplicants();
+    });
+  }
+
+  Widget _decisionBtn(IconData i, String l, Color c, VoidCallback o) => ElevatedButton.icon(
+        onPressed: o,
+        icon: Icon(i, size: 18),
+        label: Text(l, style: AppTypography.bodySmallBold.copyWith(color: AppColors.textLight)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: c,
+          foregroundColor: AppColors.textLight,
+          minimumSize: const Size(0, 55),
+          shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _applicantsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text("Error: ${snapshot.error}", style: AppTypography.bodyMedium));
+        }
+        final applicants = snapshot.data ?? [];
+        if (applicants.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.xxl),
+              child: Text("No applicants yet.", style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
+            ),
+          );
+        }
+
+        final safeIdx = _currentCandidateIdx % applicants.length;
+        final app = applicants[safeIdx];
+        final name = app['profiles']?['full_name'] ?? 'Unknown Candidate';
+        final role = app['job_title'] ?? 'N/A';
+        final companyName = app['company_name'] ?? 'N/A';
+        final status = app['status'] ?? 'applied';
+        final color = _candidateColors[safeIdx % _candidateColors.length];
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(AppSpacing.lg, 110, AppSpacing.lg, AppSpacing.lg),
+          child: Column(children: [
+            const RecruiterHeaderStats(),
+            SizedBox(height: AppSpacing.xl),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: AppDecorations.elevatedCard,
+                child: Column(children: [
+                  Container(
+                    padding: EdgeInsets.all(AppSpacing.xl),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: AppBorderRadius.topLarge,
+                    ),
+                    child: Row(children: [
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: color,
+                        child: Text(
+                          name.isNotEmpty ? name[0] : '?',
+                          style: AppTypography.headlineLarge.copyWith(color: AppColors.textLight),
+                        ),
+                      ),
+                      SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(name, style: AppTypography.titleMedium),
+                          Text("$role @ $companyName", style: AppTypography.bodySmallBold.copyWith(color: color)),
+                        ]),
+                      ),
+                    ]),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(AppSpacing.lg),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text("APPLICATION STATUS", style: AppTypography.sectionHeader),
+                        SizedBox(height: AppSpacing.sm),
+                        Row(children: [
+                          Icon(Icons.hourglass_bottom, color: AppColors.warning, size: 20),
+                          SizedBox(width: AppSpacing.xs),
+                          Text(status.toString().toUpperCase(), style: AppTypography.bodySmallBold.copyWith(color: AppColors.warning)),
+                        ]),
+                        SizedBox(height: AppSpacing.xl),
+                        Text("APPLIED ON", style: AppTypography.sectionHeader),
+                        SizedBox(height: AppSpacing.sm),
+                        Text(app['created_at']?.toString().split('T').first ?? 'Unknown date', style: AppTypography.bodyMedium),
+                        SizedBox(height: AppSpacing.lg),
+                        OutlinedButton.icon(
+                          onPressed: () => _viewResume(app['profiles']?['resume_path']),
+                          icon: const Icon(Icons.description_outlined, size: 18),
+                          label: Text("VIEW RESUME", style: AppTypography.bodySmallBold),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            side: BorderSide(color: AppColors.primary),
+                          ),
+                        ),
+                      ]),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(AppSpacing.xl),
+                    child: Row(children: [
+                      Expanded(child: _decisionBtn(Icons.close, "REJECT", AppColors.error, () => _handleDecision(false, app['id']))),
+                      SizedBox(width: AppSpacing.md),
+                      Expanded(child: _decisionBtn(Icons.check, "HIRE", AppColors.success, () => _handleDecision(true, app['id']))),
+                    ]),
+                  )
+                ]),
+              ),
+            ),
+            SizedBox(height: AppSpacing.sm),
+            Text("Queue: ${safeIdx + 1} / ${applicants.length}", style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
+          ]),
+        );
+      },
+    );
+  }
+}
