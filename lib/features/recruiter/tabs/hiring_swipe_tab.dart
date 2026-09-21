@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 import 'package:pro_recruit_ai/features/recruiter/widgets/recruiter_header_stats.dart';
+import 'package:pro_recruit_ai/features/recruiter/widgets/recruiter_swipe_card.dart';
 
 class HiringSwipeTab extends StatefulWidget {
   const HiringSwipeTab({super.key});
@@ -103,18 +104,6 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
     });
   }
 
-  Widget _decisionBtn(IconData i, String l, Color c, VoidCallback o) => ElevatedButton.icon(
-        onPressed: o,
-        icon: Icon(i, size: 18),
-        label: Text(l, style: AppTypography.bodySmallBold.copyWith(color: AppColors.textLight)),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: c,
-          foregroundColor: AppColors.textLight,
-          minimumSize: const Size(0, 50),
-          shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
-        ),
-      );
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -153,105 +142,16 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
                 const RecruiterHeaderStats(),
                 SizedBox(height: AppSpacing.md),
                 Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: AppDecorations.elevatedCard,
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(AppSpacing.lg),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.1),
-                            borderRadius: AppBorderRadius.topLarge,
-                          ),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 28,
-                                backgroundColor: color,
-                                child: Text(
-                                  name.isNotEmpty ? name[0] : '?',
-                                  style: AppTypography.headlineLarge.copyWith(color: AppColors.textLight),
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.md),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(name, style: AppTypography.titleMedium),
-                                    Text("$role @ $companyName", style: AppTypography.bodySmallBold.copyWith(color: color)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: EdgeInsets.all(AppSpacing.lg),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("APPLICATION STATUS", style: AppTypography.sectionHeader),
-                                SizedBox(height: AppSpacing.xs),
-                                Row(
-                                  children: [
-                                    Icon(Icons.hourglass_bottom, color: AppColors.warning, size: 18),
-                                    SizedBox(width: AppSpacing.xs),
-                                    Text(
-                                      status.toString().toUpperCase(),
-                                      style: AppTypography.bodySmallBold.copyWith(color: AppColors.warning),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: AppSpacing.md),
-                                Text("APPLIED ON", style: AppTypography.sectionHeader),
-                                SizedBox(height: AppSpacing.xs),
-                                Text(
-                                  app['created_at']?.toString().split('T').first ?? 'Unknown date',
-                                  style: AppTypography.bodyMedium,
-                                ),
-                                SizedBox(height: AppSpacing.md),
-                                OutlinedButton.icon(
-                                  onPressed: () => _viewResume(app['profiles']?['resume_path']),
-                                  icon: const Icon(Icons.description_outlined, size: 18),
-                                  label: Text("VIEW RESUME", style: AppTypography.bodySmallBold),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.primary,
-                                    side: BorderSide(color: AppColors.primary),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(AppSpacing.lg),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _decisionBtn(
-                                  Icons.close,
-                                  "REJECT",
-                                  AppColors.error,
-                                  () => _handleDecision(false, app['id']),
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.md),
-                              Expanded(
-                                child: _decisionBtn(
-                                  Icons.check,
-                                  "HIRE",
-                                  AppColors.success,
-                                  () => _handleDecision(true, app['id']),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: RecruiterSwipeDecisionCard(
+                    name: name,
+                    role: role,
+                    companyName: companyName,
+                    status: status.toString(),
+                    createdAt: app['created_at']?.toString() ?? 'Unknown date',
+                    accentColor: color,
+                    onViewResume: () => _viewResume(app['profiles']?['resume_path']),
+                    onReject: () => _handleDecision(false, app['id']),
+                    onHire: () => _handleDecision(true, app['id']),
                   ),
                 ),
                 SizedBox(height: AppSpacing.xs),
