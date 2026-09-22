@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
+import 'package:pro_recruit_ai/features/candidate/widgets/candidate_pitch_widgets.dart';
 
 class PitchAnalysisScreen extends StatefulWidget {
   const PitchAnalysisScreen({super.key});
@@ -52,17 +53,18 @@ class _PitchAnalysisScreenState extends State<PitchAnalysisScreen> {
       _isListening = true;
     });
 
+    // ignore: deprecated_member_use
     _speech.listen(
       onResult: (result) {
         setState(() => _transcript = result.recognizedWords);
       },
-      listenOptions: stt.SpeechListenOptions(
-        partialResults: true,
-        listenMode: stt.ListenMode.dictation,
-      ),
+      // ignore: deprecated_member_use
+      listenFor: const Duration(minutes: 5),
+      // ignore: deprecated_member_use
+      pauseFor: const Duration(seconds: 4),
     );
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() => _elapsedSeconds++);
     });
   }
@@ -77,9 +79,7 @@ class _PitchAnalysisScreenState extends State<PitchAnalysisScreen> {
   }
 
   Map<String, dynamic> _computeResults() {
-    final words = _transcript.trim().isEmpty
-        ? <String>[]
-        : _transcript.trim().split(RegExp(r'\s+'));
+    final words = _transcript.trim().isEmpty ? <String>[] : _transcript.trim().split(RegExp(r'\s+'));
     final wordCount = words.length;
     final minutes = _elapsedSeconds / 60.0;
     final wpm = minutes > 0 ? (wordCount / minutes).round() : 0;
@@ -151,144 +151,50 @@ class _PitchAnalysisScreenState extends State<PitchAnalysisScreen> {
       body: ListView(
         padding: EdgeInsets.all(AppSpacing.lg),
         children: [
-          Container(
-            padding: EdgeInsets.all(AppSpacing.xl),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [const Color(0xFF7F1D1D), AppColors.error]),
-              borderRadius: AppBorderRadius.large,
-              boxShadow: [BoxShadow(color: AppColors.error.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10))],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("REAL-TIME SPEECH ANALYSIS", style: AppTypography.sectionHeader.copyWith(color: Colors.red.shade100, letterSpacing: 1.6)),
-                SizedBox(height: AppSpacing.xs),
-                Text("Speak your pitch out loud", style: AppTypography.headlineLarge.copyWith(color: Colors.white, fontSize: 16)),
-                Text("Real pace and filler-word tracking \u2014 no fabricated scores.",
-                    style: AppTypography.caption.copyWith(color: Colors.white70)),
-              ],
-            ),
-          ),
+          const PitchHeaderBanner(),
           SizedBox(height: AppSpacing.xl),
           if (!_speechAvailable)
             Container(
               padding: EdgeInsets.all(AppSpacing.lg),
               decoration: AppDecorations.card(),
-              child: Text("Speech recognition isn't available on this device, or microphone permission was denied.",
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
+              child: Text(
+                "Speech recognition isn't available on this device, or microphone permission was denied.",
+                style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted),
+              ),
             )
           else ...[
-            Center(
-              child: Column(
-                children: [
-                  Text(_formatDuration(_elapsedSeconds), style: AppTypography.headlineLarge.copyWith(fontSize: 32)),
-                  SizedBox(height: AppSpacing.lg),
-                  GestureDetector(
-                    onTap: _isListening ? _stopListening : _startListening,
-                    child: Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(colors: _isListening
-                            ? [AppColors.error, const Color(0xFF7F1D1D)]
-                            : [AppColors.success, const Color(0xFF064E3B)]),
-                        boxShadow: [
-                          BoxShadow(
-                              color: (_isListening ? AppColors.error : AppColors.success).withValues(alpha: 0.4),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8)),
-                        ],
-                      ),
-                      child: Icon(_isListening ? Icons.stop : Icons.mic, color: Colors.white, size: 36),
-                    ),
-                  ),
-                  SizedBox(height: AppSpacing.md),
-                  Text(_isListening ? "Listening... tap to stop" : "Tap to start speaking",
-                      style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
-                ],
-              ),
+            PitchRecordingControl(
+              isListening: _isListening,
+              formattedDuration: _formatDuration(_elapsedSeconds),
+              onTap: _isListening ? _stopListening : _startListening,
             ),
             SizedBox(height: AppSpacing.xl),
             if (_transcript.isNotEmpty && _isListening) ...[
               Text("LIVE TRANSCRIPT", style: AppTypography.sectionHeader),
               SizedBox(height: AppSpacing.sm),
-              Container(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                decoration: AppDecorations.card(),
-                child: Text(_transcript, style: AppTypography.bodyMedium),
-              ),
+              PitchTranscriptCard(transcript: _transcript),
             ],
             if (_results != null) ...[
               SizedBox(height: AppSpacing.md),
               Text("YOUR RESULTS", style: AppTypography.sectionHeader),
               SizedBox(height: AppSpacing.md),
               Row(children: [
-                Expanded(child: _statCard("${_results!['wpm']}", "Words/Min", _results!['paceColor'])),
+                Expanded(child: PitchStatCard(value: "${_results!['wpm']}", label: "Words/Min", color: _results!['paceColor'])),
                 SizedBox(width: AppSpacing.md),
-                Expanded(child: _statCard("${_results!['wordCount']}", "Total Words", AppColors.info)),
+                Expanded(child: PitchStatCard(value: "${_results!['wordCount']}", label: "Total Words", color: AppColors.info)),
               ]),
               SizedBox(height: AppSpacing.md),
-              Container(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                decoration: AppDecorations.card(),
-                child: Row(children: [
-                  Icon(Icons.speed, color: _results!['paceColor']),
-                  SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_results!['paceLabel'], style: AppTypography.bodyMediumBold.copyWith(color: _results!['paceColor'])),
-                        Text("Ideal conversational pace is 110\u2013160 words per minute.",
-                            style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
-                      ],
-                    ),
-                  ),
-                ]),
-              ),
+              PitchPaceCard(paceLabel: _results!['paceLabel'], paceColor: _results!['paceColor']),
               SizedBox(height: AppSpacing.md),
-              Container(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                decoration: AppDecorations.card(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [
-                      Icon(Icons.record_voice_over, color: AppColors.warning),
-                      SizedBox(width: AppSpacing.sm),
-                      Text("Filler Words: ${_results!['totalFillers']}", style: AppTypography.bodyMediumBold),
-                    ]),
-                    SizedBox(height: AppSpacing.xs),
-                    Text("${_results!['fillerRate'].toStringAsFixed(1)}% of your words were fillers",
-                        style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
-                    if ((_results!['fillerCounts'] as Map).isNotEmpty) ...[
-                      SizedBox(height: AppSpacing.md),
-                      Wrap(
-                        spacing: AppSpacing.sm,
-                        runSpacing: AppSpacing.sm,
-                        children: (_results!['fillerCounts'] as Map<String, int>)
-                            .entries
-                            .map((e) => Container(
-                                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                                  decoration: AppDecorations.pill(AppColors.warning),
-                                  child: Text('"${e.key}" x${e.value}',
-                                      style: AppTypography.captionBold.copyWith(color: AppColors.warning)),
-                                ))
-                            .toList(),
-                      ),
-                    ],
-                  ],
-                ),
+              PitchFillerWordsCard(
+                totalFillers: _results!['totalFillers'] as int,
+                fillerRate: _results!['fillerRate'] as double,
+                fillerCounts: Map<String, int>.from(_results!['fillerCounts'] as Map),
               ),
               SizedBox(height: AppSpacing.md),
               Text("FULL TRANSCRIPT", style: AppTypography.sectionHeader),
               SizedBox(height: AppSpacing.sm),
-              Container(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                decoration: AppDecorations.card(),
-                child: Text(_transcript.isEmpty ? "No speech detected." : _transcript, style: AppTypography.bodyMedium),
-              ),
+              PitchTranscriptCard(transcript: _transcript),
             ],
           ],
           const SizedBox(height: 40),
@@ -296,20 +202,4 @@ class _PitchAnalysisScreenState extends State<PitchAnalysisScreen> {
       ),
     );
   }
-
-  Widget _statCard(String value, String label, Color color) => Container(
-        padding: EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: AppBorderRadius.medium,
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          children: [
-            Text(value, style: AppTypography.headlineLarge.copyWith(color: color, fontSize: 24)),
-            SizedBox(height: AppSpacing.xs),
-            Text(label, style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
-          ],
-        ),
-      );
 }
