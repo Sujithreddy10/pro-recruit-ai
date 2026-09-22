@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
+import 'package:pro_recruit_ai/features/recruiter/widgets/job_board_widgets.dart';
 
 class JobBoardScreen extends StatefulWidget {
   const JobBoardScreen({super.key});
@@ -25,8 +26,8 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
   Future<List<Map<String, dynamic>>> _fetchJobs() async {
     final data = await Supabase.instance.client
         .from('jobs')
-        .select('id, title, company, description, mode, salary_range, logo_url, view_count')
-        .order('title');
+        .select()
+        .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(data);
   }
 
@@ -34,12 +35,11 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
     try {
       final res = await Supabase.instance.client
           .from('applications')
-          .select()
+          .select('id')
           .eq('job_title', title)
-          .eq('company_name', company)
-          .count(CountOption.exact);
-      return res.count;
-    } catch (e) {
+          .eq('company_name', company);
+      return (res as List).length;
+    } catch (_) {
       return 0;
     }
   }
@@ -47,45 +47,15 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
   Future<void> _showJobAnalytics(Map<String, dynamic> j) async {
     final views = (j['view_count'] as int?) ?? 0;
     final applications = await _countApplications(j['title'] ?? '', j['company'] ?? '');
-    final hasViews = views > 0 && applications <= views;
-    final conversion = hasViews ? (applications / views * 100) : null;
     if (!mounted) return;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
-        title: Text(j['title'] ?? 'Job Analytics', style: AppTypography.titleMedium),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _analyticsRow(Icons.visibility_outlined, "Views", "$views"),
-            SizedBox(height: AppSpacing.sm),
-            _analyticsRow(Icons.people_outline, "Applications", "$applications"),
-            SizedBox(height: AppSpacing.sm),
-            _analyticsRow(Icons.trending_up, "Conversion Rate", hasViews ? "${conversion!.toStringAsFixed(1)}%" : "N/A"),
-            if (!hasViews) ...[
-              SizedBox(height: AppSpacing.sm),
-              Text("View tracking started recently — older applications may predate it.",
-                  style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Close")),
-        ],
+      builder: (ctx) => JobAnalyticsDialog(
+        title: j['title'] ?? 'Job Analytics',
+        views: views,
+        applications: applications,
       ),
-    );
-  }
-
-  Widget _analyticsRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: Colors.deepOrange),
-        SizedBox(width: AppSpacing.sm),
-        Expanded(child: Text(label, style: AppTypography.bodyMedium)),
-        Text(value, style: AppTypography.bodyMediumBold),
-      ],
     );
   }
 
@@ -183,24 +153,22 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
                         onPressed: isUploadingLogo
                             ? null
                             : () async {
-                                final result = await FilePicker.platform.pickFiles(
+                                final res = await FilePicker.platform.pickFiles(
                                   type: FileType.image,
                                   withData: true,
                                 );
-                                if (result == null) return;
+                                if (res == null) return;
                                 setSheetState(() => isUploadingLogo = true);
-                                final session = Supabase.instance.client.auth.currentSession;
-                                debugPrint("LOGO_DEBUG userId=${Supabase.instance.client.auth.currentUser?.id} hasSession=${session != null} tokenExpired=${session?.isExpired}");
                                 try {
-                                  final fileName = result.files.single.name;
+                                  final fileName = res.files.single.name;
                                   final path = '${DateTime.now().millisecondsSinceEpoch}_$fileName';
                                   if (kIsWeb) {
-                                    final bytes = result.files.single.bytes!;
+                                    final bytes = res.files.single.bytes!;
                                     await Supabase.instance.client.storage
                                         .from('company-logos')
                                         .uploadBinary(path, bytes, fileOptions: const FileOptions(upsert: true));
                                   } else {
-                                    final file = File(result.files.single.path!);
+                                    final file = File(res.files.single.path!);
                                     await Supabase.instance.client.storage
                                         .from('company-logos')
                                         .upload(path, file, fileOptions: const FileOptions(upsert: true));
@@ -213,12 +181,6 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
                                     isUploadingLogo = false;
                                   });
                                 } catch (e) {
-                                  debugPrint("LOGO_DEBUG exception runtimeType=${e.runtimeType}");
-                                  if (e is StorageException) {
-                                    debugPrint("LOGO_DEBUG StorageException statusCode=${e.statusCode} error=${e.error} message=${e.message}");
-                                  } else {
-                                    debugPrint("LOGO_DEBUG raw=$e");
-                                  }
                                   setSheetState(() => isUploadingLogo = false);
                                   if (ctx.mounted) {
                                     ScaffoldMessenger.of(ctx).showSnackBar(
@@ -343,13 +305,9 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
-        title: Text("Delete Job?", style: AppTypography.titleMedium),
-        content: Text(
-          "This will permanently remove \"${job['title']}\" at ${job['company']}. Existing applications referencing this job will not be affected.",
-          style: AppTypography.bodySmall,
-        ),
+        title: const Text("Delete Job"),
+        content: Text("Are you sure you want to delete \"${job['title']}\"?"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
           ElevatedButton(
@@ -367,7 +325,7 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
       await Supabase.instance.client.from('jobs').delete().eq('id', job['id']);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Job deleted"), backgroundColor: AppColors.success),
+          SnackBar(content: const Text("Job deleted"), backgroundColor: AppColors.success),
         );
         _refresh();
       }
@@ -416,9 +374,11 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
                   children: [
                     Icon(Icons.work_off_outlined, size: 56, color: AppColors.textMuted.withValues(alpha: 0.4)),
                     SizedBox(height: AppSpacing.md),
-                    Text("No jobs posted yet. Tap \"Post Job\" to add your first listing.",
-                        textAlign: TextAlign.center,
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
+                    Text(
+                      "No jobs posted yet. Tap \"Post Job\" to add your first listing.",
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted),
+                    ),
                   ],
                 ),
               ),
@@ -428,102 +388,20 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
           return ListView(
             padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 100),
             children: [
-              Container(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF7C2D12), Colors.deepOrange]),
-                  borderRadius: AppBorderRadius.large,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("JOB BOARD MANAGEMENT", style: AppTypography.sectionHeader.copyWith(color: Colors.orange.shade100)),
-                    SizedBox(height: AppSpacing.xs),
-                    Text("${jobs.length} Active Postings", style: AppTypography.headlineLarge.copyWith(color: Colors.white, fontSize: 18)),
-                    Text("Manage all open roles from one place", style: AppTypography.caption.copyWith(color: Colors.white70)),
-                  ],
+              JobBoardHeader(jobCount: jobs.length),
+              SizedBox(height: AppSpacing.xl),
+              ...jobs.map(
+                (j) => JobBoardCard(
+                  title: (j['title'] ?? 'N/A').toString(),
+                  company: (j['company'] ?? 'N/A').toString(),
+                  mode: (j['mode'] ?? 'N/A').toString(),
+                  description: j['description']?.toString(),
+                  salaryRange: (j['salary_range'] ?? 'N/A').toString(),
+                  onAnalytics: () => _showJobAnalytics(j),
+                  onEdit: () => _openJobForm(existing: j),
+                  onDelete: () => _confirmDelete(j),
                 ),
               ),
-              SizedBox(height: AppSpacing.xl),
-              ...jobs.map((j) => Container(
-                    margin: EdgeInsets.only(bottom: AppSpacing.md),
-                    padding: EdgeInsets.all(AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: AppBorderRadius.medium,
-                      border: Border.all(color: Colors.deepOrange.withValues(alpha: 0.15)),
-                      boxShadow: [BoxShadow(color: Colors.deepOrange.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 5))],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(AppSpacing.sm),
-                              decoration: BoxDecoration(color: Colors.deepOrange.withValues(alpha: 0.1), borderRadius: AppBorderRadius.small),
-                              child: const Icon(Icons.business_center_outlined, color: Colors.deepOrange, size: 20),
-                            ),
-                            SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(j['title'] ?? 'N/A', style: AppTypography.bodyMediumBold),
-                                  Text(j['company'] ?? 'N/A', style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                              decoration: AppDecorations.pill(Colors.deepOrange),
-                              child: Text(j['mode'] ?? 'N/A', style: AppTypography.captionBold.copyWith(color: Colors.deepOrange)),
-                            ),
-                          ],
-                        ),
-                        if ((j['description'] ?? '').toString().isNotEmpty) ...[
-                          SizedBox(height: AppSpacing.md),
-                          Text(j['description'], style: AppTypography.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
-                        ],
-                        SizedBox(height: AppSpacing.md),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                              decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: AppBorderRadius.small),
-                              child: Text(j['salary_range'] ?? 'N/A', style: AppTypography.bodySmallBold.copyWith(color: AppColors.success)),
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: Icon(Icons.bar_chart_outlined, color: Colors.deepOrange, size: 16),
-                                  onPressed: () => _showJobAnalytics(j),
-                                  tooltip: "Analytics",
-                                ),
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: Icon(Icons.edit_outlined, color: AppColors.info, size: 16),
-                                  onPressed: () => _openJobForm(existing: j),
-                                  tooltip: "Edit",
-                                ),
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: Icon(Icons.delete_outline, color: AppColors.error, size: 16),
-                                  onPressed: () => _confirmDelete(j),
-                                  tooltip: "Delete",
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  )),
             ],
           );
         },
