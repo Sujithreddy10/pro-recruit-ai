@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:pro_recruit_ai/features/candidate/widgets/candidate_profile_hub_widgets.dart';
 
 class CandidateProfileHub extends StatefulWidget {
   const CandidateProfileHub({super.key});
@@ -1464,105 +1465,15 @@ class _CandidateProfileHubState extends State<CandidateProfileHub> {
     }
   }
 
-  // ---------- SHARED UI HELPERS ----------
-  Widget _sectionHeaderRow(String title, IconData icon, VoidCallback onAdd,
-          {String label = "Add"}) =>
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(children: [
-            Icon(icon, size: 18, color: AppColors.primary),
-            SizedBox(width: AppSpacing.xs),
-            Text(title,
-                style: AppTypography.sectionHeader
-                    .copyWith(color: AppColors.primary)),
-          ]),
-          TextButton.icon(
-            onPressed: onAdd,
-            icon: Icon(
-                label == "Edit"
-                    ? Icons.edit_outlined
-                    : Icons.add_circle_outline,
-                size: 16),
-            label: Text(label),
-          ),
-        ],
-      );
-
-  Widget _emptyCard(String msg) => Container(
-        padding: EdgeInsets.all(AppSpacing.lg),
-        decoration: AppDecorations.card(),
-        child: Text(msg,
-            style:
-                AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
-      );
-
-  Widget _infoCard(
-          {required IconData icon,
-          required Color color,
-          required String title,
-          required String subtitle,
-          VoidCallback? onEdit,
-          VoidCallback? onDelete}) =>
-      Container(
-        margin: EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: AppBorderRadius.medium,
-          border: Border.all(color: color.withValues(alpha: 0.18)),
-          boxShadow: [
-            BoxShadow(
-                color: color.withValues(alpha: 0.06),
-                blurRadius: 10,
-                offset: const Offset(0, 4))
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
-              child: Icon(icon, color: color, size: 18),
-            ),
-            SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: AppTypography.bodyMediumBold),
-                  if (subtitle.isNotEmpty)
-                    Text(subtitle,
-                        style: AppTypography.caption
-                            .copyWith(color: AppColors.textMuted)),
-                ],
-              ),
-            ),
-            if (onEdit != null)
-              IconButton(
-                icon: Icon(Icons.edit_outlined,
-                    size: 18, color: AppColors.textMuted),
-                onPressed: onEdit,
-              ),
-            if (onDelete != null)
-              IconButton(
-                icon: Icon(Icons.delete_outline,
-                    size: 18, color: AppColors.textMuted),
-                onPressed: onDelete,
-              ),
-          ],
-        ),
-      );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceAlt,
       appBar: AppBar(
         leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context)),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text("Executive Profile", style: AppTypography.titleMedium),
         centerTitle: false,
         backgroundColor: AppColors.surface,
@@ -1575,16 +1486,15 @@ class _CandidateProfileHubState extends State<CandidateProfileHub> {
           }
           if (snapshot.hasError) {
             return Center(
-                child: Text("Error: ${snapshot.error}",
-                    style: AppTypography.bodyMedium));
+              child: Text("Error: ${snapshot.error}", style: AppTypography.bodyMedium),
+            );
           }
           final data = snapshot.data!;
           final skills = data['skills'] as List<Map<String, dynamic>>;
           final projects = data['projects'] as List<Map<String, dynamic>>;
           final employment = data['employment'] as List<Map<String, dynamic>>;
           final education = data['education'] as List<Map<String, dynamic>>;
-          final accomplishments =
-              data['accomplishments'] as List<Map<String, dynamic>>;
+          final accomplishments = data['accomplishments'] as List<Map<String, dynamic>>;
           final languages = data['languages'] as List<Map<String, dynamic>>;
           final name = data['name'] as String;
           final resumePath = data['resume_path'] as String?;
@@ -1593,138 +1503,71 @@ class _CandidateProfileHubState extends State<CandidateProfileHub> {
             padding: EdgeInsets.all(AppSpacing.lg),
             children: [
               // --- HERO HEADER ---
-              Container(
-                padding: EdgeInsets.all(AppSpacing.xl),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryDark,
-                      AppColors.primary,
-                      Colors.indigo.shade400
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: AppBorderRadius.large,
-                  boxShadow: [
-                    BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.35),
-                        blurRadius: 24,
-                        offset: const Offset(0, 12)),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 34,
-                      backgroundColor: Colors.white.withValues(alpha: 0.15),
-                      child: Text(
-                        name.isNotEmpty ? name[0].toUpperCase() : '?',
-                        style: AppTypography.headlineLarge
-                            .copyWith(color: AppColors.textLight, fontSize: 28),
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.lg),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: data['identity_status'] == 'verified'
-                                ? null
-                                : (_pendingVerificationSessionId != null
-                                    ? _checkVerificationStatus
-                                    : _startIdentityVerification),
-                            child: Row(children: [
-                              Icon(
-                                data['identity_status'] == 'verified'
-                                    ? Icons.verified
-                                    : (_pendingVerificationSessionId != null
-                                        ? Icons.refresh
-                                        : Icons.gpp_maybe_outlined),
-                                color: data['identity_status'] == 'verified'
-                                    ? Colors.greenAccent
-                                    : Colors.white60,
-                                size: 16,
-                              ),
-                              SizedBox(width: AppSpacing.xs),
-                              Text(
-                                data['identity_status'] == 'verified'
-                                    ? "HYLO VERIFIED"
-                                    : (_pendingVerificationSessionId != null
-                                        ? "CHECK STATUS"
-                                        : "VERIFY IDENTITY"),
-                                style: AppTypography.sectionHeader.copyWith(
-                                  color: data['identity_status'] == 'verified'
-                                      ? Colors.greenAccent
-                                      : Colors.white60,
-                                  letterSpacing: 1.6,
-                                ),
-                              ),
-                            ]),
-                          ),
-                          SizedBox(height: AppSpacing.xs),
-                          Text(name,
-                              style: AppTypography.headlineLarge.copyWith(
-                                  color: AppColors.textLight, fontSize: 20)),
-                          SizedBox(height: AppSpacing.xs),
-                          Text(
-                              "${skills.length} skills · ${projects.length} projects",
-                              style: AppTypography.caption
-                                  .copyWith(color: Colors.white60)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              ProfileHeroHeader(
+                name: name,
+                identityStatus: (data['identity_status'] ?? '').toString(),
+                pendingVerificationSessionId: _pendingVerificationSessionId,
+                skillsCount: skills.length,
+                projectsCount: projects.length,
+                onVerifyTap: data['identity_status'] == 'verified'
+                    ? null
+                    : (_pendingVerificationSessionId != null
+                        ? _checkVerificationStatus
+                        : _startIdentityVerification),
               ),
               SizedBox(height: AppSpacing.xl),
 
               // --- BASIC DETAILS ---
-              _sectionHeaderRow("BASIC DETAILS", Icons.person_outline,
-                  () => _editBasicDetails(data),
-                  label: "Edit"),
+              ProfileSectionHeaderRow(
+                title: "BASIC DETAILS",
+                icon: Icons.person_outline,
+                onAdd: () => _editBasicDetails(data),
+                label: "Edit",
+              ),
               SizedBox(height: AppSpacing.sm),
-              _infoCard(
+              ProfileInfoCard(
                 icon: Icons.person_outline,
                 color: AppColors.info,
                 title: name,
                 subtitle: [
-                  if ((data['work_status'] ?? '').toString().isNotEmpty)
-                    data['work_status'],
+                  if ((data['work_status'] ?? '').toString().isNotEmpty) data['work_status'],
                   if ((data['city'] ?? '').toString().isNotEmpty) data['city'],
-                  if ((data['phone'] ?? '').toString().isNotEmpty)
-                    data['phone'],
+                  if ((data['phone'] ?? '').toString().isNotEmpty) data['phone'],
                   _candidateEmail,
                 ].join(' · '),
               ),
               SizedBox(height: AppSpacing.xl),
 
               // --- PROFESSIONAL SUMMARY ---
-              _sectionHeaderRow("PROFESSIONAL SUMMARY", Icons.history_edu,
-                  () => _editSummary(data),
-                  label: "Edit"),
+              ProfileSectionHeaderRow(
+                title: "PROFESSIONAL SUMMARY",
+                icon: Icons.history_edu,
+                onAdd: () => _editSummary(data),
+                label: "Edit",
+              ),
               SizedBox(height: AppSpacing.sm),
-              _infoCard(
+              ProfileInfoCard(
                 icon: Icons.history_edu,
                 color: AppColors.warning,
-                title:
-                    (data['professional_summary'] ?? '').toString().isNotEmpty
-                        ? "Your Summary"
-                        : "No summary yet",
-                subtitle:
-                    (data['professional_summary'] ?? '').toString().isNotEmpty
-                        ? data['professional_summary']
-                        : "Tap Edit to add a professional summary",
+                title: (data['professional_summary'] ?? '').toString().isNotEmpty
+                    ? "Your Summary"
+                    : "No summary yet",
+                subtitle: (data['professional_summary'] ?? '').toString().isNotEmpty
+                    ? data['professional_summary']
+                    : "Tap Edit to add a professional summary",
               ),
               SizedBox(height: AppSpacing.xl),
 
               // --- SKILLS ---
-              _sectionHeaderRow("SKILLS", Icons.bolt, _addSkillDialog,
-                  label: "Add Skill"),
+              ProfileSectionHeaderRow(
+                title: "SKILLS",
+                icon: Icons.bolt,
+                onAdd: _addSkillDialog,
+                label: "Add Skill",
+              ),
               SizedBox(height: AppSpacing.sm),
               if (skills.isEmpty)
-                _emptyCard("No skills added yet.")
+                const ProfileEmptyCard(message: "No skills added yet.")
               else
                 ...skills.map((s) {
                   final color = _proficiencyColor(s['proficiency']);
@@ -1737,9 +1580,10 @@ class _CandidateProfileHubState extends State<CandidateProfileHub> {
                       border: Border.all(color: color.withValues(alpha: 0.18)),
                       boxShadow: [
                         BoxShadow(
-                            color: color.withValues(alpha: 0.06),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4))
+                          color: color.withValues(alpha: 0.06),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
                     child: Row(
@@ -1747,37 +1591,35 @@ class _CandidateProfileHubState extends State<CandidateProfileHub> {
                         Container(
                           padding: EdgeInsets.all(AppSpacing.sm),
                           decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.12),
-                              shape: BoxShape.circle),
-                          child: Icon(_proficiencyIcon(s['proficiency']),
-                              color: color, size: 18),
+                            color: color.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(_proficiencyIcon(s['proficiency']), color: color, size: 18),
                         ),
                         SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(s['skill_name'],
-                                  style: AppTypography.bodyMediumBold),
+                              Text(s['skill_name'], style: AppTypography.bodyMediumBold),
                               if ((s['category'] ?? '').toString().isNotEmpty)
-                                Text(s['category'],
-                                    style: AppTypography.caption
-                                        .copyWith(color: AppColors.textMuted)),
+                                Text(
+                                  s['category'],
+                                  style: AppTypography.caption.copyWith(color: AppColors.textMuted),
+                                ),
                             ],
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.sm,
-                              vertical: AppSpacing.xs),
+                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                           decoration: AppDecorations.pill(color),
-                          child: Text(s['proficiency'].toString().toUpperCase(),
-                              style: AppTypography.captionBold
-                                  .copyWith(color: color)),
+                          child: Text(
+                            s['proficiency'].toString().toUpperCase(),
+                            style: AppTypography.captionBold.copyWith(color: color),
+                          ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.edit_outlined,
-                              size: 18, color: AppColors.textMuted),
+                          icon: Icon(Icons.edit_outlined, size: 18, color: AppColors.textMuted),
                           onPressed: () => _editSkillDialog(s),
                         ),
                       ],
@@ -1787,14 +1629,17 @@ class _CandidateProfileHubState extends State<CandidateProfileHub> {
               SizedBox(height: AppSpacing.xl),
 
               // --- EMPLOYMENT ---
-              _sectionHeaderRow("EMPLOYMENT", Icons.business_center_outlined,
-                  _addEmploymentDialog,
-                  label: "Add"),
+              ProfileSectionHeaderRow(
+                title: "EMPLOYMENT",
+                icon: Icons.business_center_outlined,
+                onAdd: _addEmploymentDialog,
+                label: "Add",
+              ),
               SizedBox(height: AppSpacing.sm),
               if (employment.isEmpty)
-                _emptyCard("No employment history added yet.")
+                const ProfileEmptyCard(message: "No employment history added yet.")
               else
-                ...employment.map((e) => _infoCard(
+                ...employment.map((e) => ProfileInfoCard(
                       icon: Icons.business_center_outlined,
                       color: Colors.indigo,
                       title: "${e['designation']} @ ${e['company_name']}",
@@ -1806,146 +1651,76 @@ class _CandidateProfileHubState extends State<CandidateProfileHub> {
               SizedBox(height: AppSpacing.xl),
 
               // --- FEATURED PROJECTS ---
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(children: [
-                    Icon(Icons.rocket_launch_outlined,
-                        size: 18, color: AppColors.primary),
-                    SizedBox(width: AppSpacing.xs),
-                    Text("FEATURED PROJECTS",
-                        style: AppTypography.sectionHeader
-                            .copyWith(color: AppColors.primary)),
-                  ]),
-                  TextButton.icon(
-                    onPressed: _addProjectDialog,
-                    icon: const Icon(Icons.add_circle_outline, size: 16),
-                    label: const Text("Add Project"),
-                  ),
-                ],
+              ProfileSectionHeaderRow(
+                title: "FEATURED PROJECTS",
+                icon: Icons.rocket_launch_outlined,
+                onAdd: _addProjectDialog,
+                label: "Add Project",
               ),
               SizedBox(height: AppSpacing.sm),
               if (projects.isEmpty)
-                _emptyCard("No projects added yet.")
+                const ProfileEmptyCard(message: "No projects added yet.")
               else
-                ...projects.map((p) {
-                  final tags = (p['tech_tags'] as String? ?? '')
-                      .split(',')
-                      .map((t) => t.trim())
-                      .where((t) => t.isNotEmpty)
-                      .toList();
-                  return Container(
-                    margin: EdgeInsets.only(bottom: AppSpacing.md),
-                    padding: EdgeInsets.all(AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.indigo.shade50,
-                          AppColors.primary.withValues(alpha: 0.05)
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: AppBorderRadius.medium,
-                      border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.15)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          Icon(Icons.folder_special_outlined,
-                              size: 18, color: AppColors.primary),
-                          SizedBox(width: AppSpacing.xs),
-                          Expanded(
-                            child: Text(p['title'],
-                                style: AppTypography.bodyMediumBold
-                                    .copyWith(color: AppColors.primary)),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.edit_outlined,
-                                size: 18, color: AppColors.primary),
-                            onPressed: () => _editProjectDialog(p),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ]),
-                        SizedBox(height: AppSpacing.sm),
-                        Text(p['description'], style: AppTypography.bodySmall),
-                        SizedBox(height: AppSpacing.md),
-                        Wrap(
-                          spacing: AppSpacing.sm,
-                          runSpacing: AppSpacing.sm,
-                          children: tags
-                              .map((t) => Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.sm,
-                                        vertical: AppSpacing.xs),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary
-                                          .withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(t,
-                                        style: AppTypography.captionBold
-                                            .copyWith(
-                                                color: AppColors.primary)),
-                                  ))
-                              .toList(),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
+                ...projects.map((p) => ProfileProjectCard(
+                      project: p,
+                      onEdit: () => _editProjectDialog(p),
+                    )),
               SizedBox(height: AppSpacing.xl),
 
               // --- EDUCATION ---
-              _sectionHeaderRow(
-                  "EDUCATION", Icons.school_outlined, _addEducationDialog,
-                  label: "Add"),
+              ProfileSectionHeaderRow(
+                title: "EDUCATION",
+                icon: Icons.school_outlined,
+                onAdd: _addEducationDialog,
+                label: "Add",
+              ),
               SizedBox(height: AppSpacing.sm),
               if (education.isEmpty)
-                _emptyCard("No education added yet.")
+                const ProfileEmptyCard(message: "No education added yet.")
               else
-                ...education.map((ed) => _infoCard(
+                ...education.map((ed) => ProfileInfoCard(
                       icon: Icons.school_outlined,
                       color: Colors.brown,
                       title: ed['degree'],
-                      subtitle:
-                          "${ed['institution'] ?? ''} · ${ed['year_of_passing'] ?? ''}",
+                      subtitle: "${ed['institution'] ?? ''} · ${ed['year_of_passing'] ?? ''}",
                       onEdit: () => _editEducationDialog(ed),
                       onDelete: () => _deleteEducation(ed['id']),
                     )),
               SizedBox(height: AppSpacing.xl),
 
               // --- ACCOMPLISHMENTS ---
-              _sectionHeaderRow("ACCOMPLISHMENTS", Icons.emoji_events_outlined,
-                  _addAccomplishmentDialog,
-                  label: "Add"),
+              ProfileSectionHeaderRow(
+                title: "ACCOMPLISHMENTS",
+                icon: Icons.emoji_events_outlined,
+                onAdd: _addAccomplishmentDialog,
+                label: "Add",
+              ),
               SizedBox(height: AppSpacing.sm),
               if (accomplishments.isEmpty)
-                _emptyCard("No accomplishments added yet.")
+                const ProfileEmptyCard(message: "No accomplishments added yet.")
               else
-                ...accomplishments.map((a) => _infoCard(
+                ...accomplishments.map((a) => ProfileInfoCard(
                       icon: Icons.emoji_events_outlined,
                       color: Colors.amber.shade800,
                       title: a['title'],
-                      subtitle:
-                          "${a['type'] ?? ''} · ${a['date_achieved'] ?? ''}",
+                      subtitle: "${a['type'] ?? ''} · ${a['date_achieved'] ?? ''}",
                       onEdit: () => _editAccomplishmentDialog(a),
                       onDelete: () => _deleteAccomplishment(a['id']),
                     )),
               SizedBox(height: AppSpacing.xl),
 
               // --- LANGUAGES ---
-              _sectionHeaderRow(
-                  "LANGUAGES", Icons.translate, _addLanguageDialog,
-                  label: "Add"),
+              ProfileSectionHeaderRow(
+                title: "LANGUAGES",
+                icon: Icons.translate,
+                onAdd: _addLanguageDialog,
+                label: "Add",
+              ),
               SizedBox(height: AppSpacing.sm),
               if (languages.isEmpty)
-                _emptyCard("No languages added yet.")
+                const ProfileEmptyCard(message: "No languages added yet.")
               else
-                ...languages.map((l) => _infoCard(
+                ...languages.map((l) => ProfileInfoCard(
                       icon: Icons.translate,
                       color: Colors.cyan.shade700,
                       title: l['language_name'],
@@ -1955,79 +1730,38 @@ class _CandidateProfileHubState extends State<CandidateProfileHub> {
               SizedBox(height: AppSpacing.xl),
 
               // --- CAREER PREFERENCES ---
-              _sectionHeaderRow("CAREER PREFERENCES", Icons.star_border,
-                  () => _editCareerPreferences(data),
-                  label: "Edit"),
+              ProfileSectionHeaderRow(
+                title: "CAREER PREFERENCES",
+                icon: Icons.star_border,
+                onAdd: () => _editCareerPreferences(data),
+                label: "Edit",
+              ),
               SizedBox(height: AppSpacing.sm),
-              _infoCard(
+              ProfileInfoCard(
                 icon: Icons.star_border,
                 color: AppColors.info,
                 title: (data['preferred_work_mode'] ?? '').toString().isNotEmpty
                     ? data['preferred_work_mode']
                     : "No preference set",
                 subtitle: [
-                  if ((data['preferred_location'] ?? '').toString().isNotEmpty)
-                    data['preferred_location'],
-                  if ((data['expected_salary'] ?? '').toString().isNotEmpty)
-                    data['expected_salary'],
+                  if ((data['preferred_location'] ?? '').toString().isNotEmpty) data['preferred_location'],
+                  if ((data['expected_salary'] ?? '').toString().isNotEmpty) data['expected_salary'],
                 ].join(' · '),
               ),
               SizedBox(height: AppSpacing.xl),
 
               // --- RESUME ---
-              Text("RESUME",
-                  style: AppTypography.sectionHeader
-                      .copyWith(color: AppColors.primary)),
+              Text("RESUME", style: AppTypography.sectionHeader.copyWith(color: AppColors.primary)),
               SizedBox(height: AppSpacing.sm),
-              Card(
-                elevation: 0.2,
-                shape: RoundedRectangleBorder(
-                    borderRadius: AppBorderRadius.medium),
-                child: ListTile(
-                  onTap: _isUploadingResume ? null : _pickAndUploadResume,
-                  leading: Container(
-                    padding: EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.1),
-                        borderRadius: AppBorderRadius.small),
-                    child: Icon(Icons.description_outlined,
-                        color: AppColors.success, size: 20),
-                  ),
-                  title: const Text("Resume"),
-                  subtitle: Text(_isUploadingResume
-                      ? "Uploading..."
-                      : (resumePath != null
-                          ? resumePath.split('/').last
-                          : "No resume uploaded yet")),
-                  trailing: const Icon(Icons.upload_file, size: 20),
-                ),
+              ProfileResumeCard(
+                isUploading: _isUploadingResume,
+                resumePath: resumePath,
+                onTap: _pickAndUploadResume,
               ),
               SizedBox(height: AppSpacing.xl),
 
               // --- EXPORT ---
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [AppColors.primaryDark, AppColors.primary]),
-                  borderRadius: AppBorderRadius.medium,
-                  boxShadow: [
-                    BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8))
-                  ],
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: () => _exportPdf(data),
-                  icon: const Icon(Icons.download_rounded),
-                  label: const Text("Export Corporate ATS Resume (PDF)"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    minimumSize: const Size(double.infinity, 55),
-                  ),
-                ),
-              ),
+              ProfileExportPdfButton(onExport: () => _exportPdf(data)),
               const SizedBox(height: 40),
             ],
           );
