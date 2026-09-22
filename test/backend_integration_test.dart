@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
 
 class _TestHttpOverrides extends HttpOverrides {
   @override
@@ -29,14 +28,19 @@ void main() {
     expect(cleanKey.isNotEmpty, isTrue);
 
     final uri = Uri.parse('$cleanUrl/rest/v1/jobs?select=id,title,company,salary_range&limit=5');
-    final response = await http.get(uri, headers: {
-      'apikey': cleanKey,
-      'Authorization': 'Bearer $cleanKey',
-    });
+    final client = HttpClient();
+    final request = await client.getUrl(uri);
+    request.headers.set('apikey', cleanKey);
+    request.headers.set('Authorization', 'Bearer $cleanKey');
 
+    final response = await request.close();
     expect(response.statusCode, equals(200));
-    final data = jsonDecode(response.body) as List;
+
+    final responseBody = await response.transform(utf8.decoder).join();
+    final data = jsonDecode(responseBody) as List;
+
     expect(data.isNotEmpty, isTrue);
     print('Verified: Fetched ${data.length} live jobs from Supabase with status ${response.statusCode}!');
+    client.close();
   });
 }
