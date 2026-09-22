@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
+import 'package:pro_recruit_ai/features/candidate/widgets/candidate_certificate_widgets.dart';
 
 class EliteCertificatesScreen extends StatefulWidget {
   const EliteCertificatesScreen({super.key});
+
   @override
   State<EliteCertificatesScreen> createState() => _EliteCertificatesScreenState();
 }
@@ -50,7 +51,7 @@ class _EliteCertificatesScreenState extends State<EliteCertificatesScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to open: $e"), backgroundColor: AppColors.error),
+          SnackBar(content: Text("Could not open file: $e"), backgroundColor: AppColors.error),
         );
       }
     }
@@ -59,20 +60,7 @@ class _EliteCertificatesScreenState extends State<EliteCertificatesScreen> {
   Future<void> _confirmDelete(Map<String, dynamic> cert) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
-        title: Text("Delete Certificate?", style: AppTypography.titleMedium),
-        content: Text("This will permanently remove \"${cert['title']}\".", style: AppTypography.bodySmall),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Delete"),
-          ),
-        ],
-      ),
+      builder: (ctx) => DeleteCertificateDialog(title: (cert['title'] ?? '').toString()),
     );
 
     if (confirmed != true) return;
@@ -96,89 +84,15 @@ class _EliteCertificatesScreenState extends State<EliteCertificatesScreen> {
   }
 
   Future<void> _openAddForm() async {
-    final titleCtrl = TextEditingController();
-    final orgCtrl = TextEditingController();
-    DateTime? selectedDate;
-    PlatformFile? pickedFile;
-
-    final result = await showModalBottomSheet<bool>(
+    final formData = await showModalBottomSheet<AddCertificateFormData>(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.topLarge),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Padding(
-          padding: EdgeInsets.fromLTRB(
-              AppSpacing.xl, AppSpacing.lg, AppSpacing.xl, MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Add Certificate", style: AppTypography.titleMedium),
-                    IconButton(onPressed: () => Navigator.pop(ctx, false), icon: const Icon(Icons.close)),
-                  ],
-                ),
-                const Divider(),
-                SizedBox(height: AppSpacing.sm),
-                TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: "Certificate Title")),
-                SizedBox(height: AppSpacing.md),
-                TextField(controller: orgCtrl, decoration: const InputDecoration(labelText: "Issuing Organization")),
-                SizedBox(height: AppSpacing.md),
-                InkWell(
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: ctx,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime.now(),
-                    );
-                    if (picked != null) setSheetState(() => selectedDate = picked);
-                  },
-                  child: InputDecorator(
-                    decoration: const InputDecoration(labelText: "Date Earned"),
-                    child: Text(selectedDate == null
-                        ? "Select date"
-                        : "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}"),
-                  ),
-                ),
-                SizedBox(height: AppSpacing.md),
-                OutlinedButton.icon(
-                  onPressed: () async {
-                    final result = await FilePicker.platform.pickFiles(
-                      type: FileType.custom,
-                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-                      withData: true,
-                    );
-                    if (result != null) setSheetState(() => pickedFile = result.files.single);
-                  },
-                  icon: const Icon(Icons.upload_file),
-                  label: Text(pickedFile == null ? "Choose File (PDF/Image)" : pickedFile!.name),
-                ),
-                SizedBox(height: AppSpacing.xl),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text("UPLOAD CERTIFICATE"),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      builder: (ctx) => const AddCertificateBottomSheet(),
     );
 
-    if (result != true) return;
-    if (titleCtrl.text.trim().isEmpty || orgCtrl.text.trim().isEmpty || pickedFile == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Title, organization, and file are all required.")),
-        );
-      }
-      return;
-    }
+    if (formData == null) return;
 
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
@@ -186,8 +100,8 @@ class _EliteCertificatesScreenState extends State<EliteCertificatesScreen> {
     setState(() => _isUploading = true);
 
     try {
-      final file = File(pickedFile!.path!);
-      final storagePath = '$userId/${DateTime.now().millisecondsSinceEpoch}_${pickedFile!.name}';
+      final file = File(formData.file.path!);
+      final storagePath = '$userId/${DateTime.now().millisecondsSinceEpoch}_${formData.file.name}';
 
       await Supabase.instance.client.storage
           .from('certificates')
@@ -195,9 +109,9 @@ class _EliteCertificatesScreenState extends State<EliteCertificatesScreen> {
 
       await Supabase.instance.client.from('candidate_certificates').insert({
         'user_id': userId,
-        'title': titleCtrl.text.trim(),
-        'issuing_org': orgCtrl.text.trim(),
-        'date_earned': selectedDate?.toIso8601String().split('T').first,
+        'title': formData.title,
+        'issuing_org': formData.issuingOrg,
+        'date_earned': formData.dateEarned?.toIso8601String().split('T').first,
         'file_path': storagePath,
       });
 
@@ -248,84 +162,21 @@ class _EliteCertificatesScreenState extends State<EliteCertificatesScreen> {
           final certs = snapshot.data ?? [];
 
           if (certs.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.all(AppSpacing.xxl),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.workspace_premium_outlined, size: 56, color: AppColors.textMuted.withValues(alpha: 0.4)),
-                    SizedBox(height: AppSpacing.md),
-                    Text("No certificates uploaded yet. Tap \"Add Certificate\" to add your first one.",
-                        textAlign: TextAlign.center,
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
-                  ],
-                ),
-              ),
-            );
+            return const CertificateEmptyView();
           }
 
           return ListView(
             padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 100),
             children: [
-              Container(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [const Color(0xFF78350F), AppColors.accentAmber]),
-                  borderRadius: AppBorderRadius.large,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("YOUR CREDENTIALS", style: AppTypography.sectionHeader.copyWith(color: Colors.amber.shade100)),
-                    SizedBox(height: AppSpacing.xs),
-                    Text("${certs.length} Certificates Uploaded", style: AppTypography.headlineLarge.copyWith(color: Colors.white, fontSize: 18)),
-                    Text("Real, verifiable credentials you've earned", style: AppTypography.caption.copyWith(color: Colors.white70)),
-                  ],
+              CertificateHeaderCard(count: certs.length),
+              SizedBox(height: AppSpacing.xl),
+              ...certs.map(
+                (c) => CertificateItemCard(
+                  cert: c,
+                  onView: () => _viewCertificate(c['file_path']),
+                  onDelete: () => _confirmDelete(c),
                 ),
               ),
-              SizedBox(height: AppSpacing.xl),
-              ...certs.map((c) => Container(
-                    margin: EdgeInsets.only(bottom: AppSpacing.md),
-                    padding: EdgeInsets.all(AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: AppBorderRadius.medium,
-                      border: Border.all(color: AppColors.accentAmber.withValues(alpha: 0.2)),
-                      boxShadow: [BoxShadow(color: AppColors.accentAmber.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 5))],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(AppSpacing.sm),
-                          decoration: BoxDecoration(color: AppColors.accentAmber.withValues(alpha: 0.14), shape: BoxShape.circle),
-                          child: Icon(Icons.workspace_premium, color: AppColors.accentAmber, size: 20),
-                        ),
-                        SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(c['title'] ?? 'N/A', style: AppTypography.bodyMediumBold),
-                              Text(c['issuing_org'] ?? 'N/A', style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
-                              if (c['date_earned'] != null)
-                                Text("Earned: ${c['date_earned']}", style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.visibility_outlined, color: AppColors.info, size: 20),
-                          onPressed: () => _viewCertificate(c['file_path']),
-                          tooltip: "View",
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete_outline, color: AppColors.error, size: 20),
-                          onPressed: () => _confirmDelete(c),
-                          tooltip: "Delete",
-                        ),
-                      ],
-                    ),
-                  )),
             ],
           );
         },
