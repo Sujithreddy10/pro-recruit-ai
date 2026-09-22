@@ -22,7 +22,7 @@ void main() {
     final cleanKey = rawKey.replaceAll("'", "").replaceAll('"', "").replaceAll(',', "").trim();
 
     if (cleanUrl.isNotEmpty && cleanKey.isNotEmpty) {
-      await Supabase.initialize(url: cleanUrl, anonKey: cleanKey);
+      await Supabase.initialize(url: cleanUrl, publishableKey: cleanKey);
     }
   });
 
