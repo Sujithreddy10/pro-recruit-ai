@@ -1,43 +1,42 @@
 // ignore_for_file: avoid_print
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+class _TestHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (cert, host, port) => true;
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  HttpOverrides.global = _TestHttpOverrides();
 
-  setUpAll(() async {
-    SharedPreferences.setMockInitialValues({});
-
-    try {
-      await dotenv.load(fileName: "assets/.env");
-    } catch (_) {
-      // Fallback if env file is unavailable in CI
-    }
+  test('jobs endpoint connectivity and live data validation', () async {
+    await dotenv.load(fileName: "assets/.env");
 
     final rawUrl = dotenv.maybeGet('SUPABASE_URL') ?? "";
     final rawKey = dotenv.maybeGet('SUPABASE_ANON_KEY') ?? "";
     final cleanUrl = rawUrl.replaceAll("'", "").replaceAll('"', "").replaceAll(',', "").trim();
     final cleanKey = rawKey.replaceAll("'", "").replaceAll('"', "").replaceAll(',', "").trim();
 
-    if (cleanUrl.isNotEmpty && cleanKey.isNotEmpty) {
-      await Supabase.initialize(url: cleanUrl, publishableKey: cleanKey);
-    }
-  });
+    expect(cleanUrl.isNotEmpty, isTrue);
+    expect(cleanKey.isNotEmpty, isTrue);
 
-  test('basic connectivity check - can read jobs table', () async {
-    if (!Supabase.instance.isInitialized) {
-      print('Skipping test: Supabase not configured in current test environment');
-      return;
-    }
+    final uri = Uri.parse('$cleanUrl/rest/v1/jobs?select=id,title,company,salary_range&limit=5');
+    final response = await http.get(uri, headers: {
+      'apikey': cleanKey,
+      'Authorization': 'Bearer $cleanKey',
+    });
 
-    try {
-      final client = Supabase.instance.client;
-      final data = await client.from('jobs').select('id, title').limit(1);
-      expect(data, isA<List>());
-    } catch (e) {
-      print('Connectivity warning: $e');
-    }
+    expect(response.statusCode, equals(200));
+    final data = jsonDecode(response.body) as List;
+    expect(data.isNotEmpty, isTrue);
+    print('Verified: Fetched ${data.length} live jobs from Supabase with status ${response.statusCode}!');
   });
 }
