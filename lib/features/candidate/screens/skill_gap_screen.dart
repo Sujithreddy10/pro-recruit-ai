@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
+import 'package:pro_recruit_ai/features/candidate/widgets/candidate_skill_gap_widgets.dart';
 
 class SkillGapScreen extends StatefulWidget {
   const SkillGapScreen({super.key});
@@ -17,7 +18,7 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
 
   int _readinessPercent = 0;
   List<String> _matchedKeywords = [];
-  List<Map<String, String>> _gaps = []; // {skill, reason}
+  List<Map<String, String>> _gaps = [];
   bool _loadingGap = false;
   String? _gapError;
 
@@ -27,7 +28,7 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
     'will', 'would', 'should', 'could', 'this', 'that', 'these', 'those', 'we', 'you', 'i',
     'as', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'our', 'your', 'their'
   };
- 
+
   @override
   void initState() {
     super.initState();
@@ -106,8 +107,6 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
     }
 
     try {
-      // Calls the Supabase Edge Function 'skill-gap', which holds the
-      // Gemini API key server-side. The key never ships inside the app.
       final response = await Supabase.instance.client.functions.invoke(
         'skill-gap',
         body: {
@@ -136,12 +135,6 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
     }
   }
 
-  Color _readinessColor(int percent) {
-    if (percent >= 70) return AppColors.success;
-    if (percent >= 40) return AppColors.warning;
-    return AppColors.error;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,64 +156,19 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
             return Center(
               child: Padding(
                 padding: EdgeInsets.all(AppSpacing.xxl),
-                child: Text("No jobs available to compare against yet.",
-                    textAlign: TextAlign.center, style: AppTypography.bodyMedium.copyWith(color: AppColors.textMuted)),
+                child: Text(
+                  "No jobs available to compare against yet.",
+                  textAlign: TextAlign.center,
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textMuted),
+                ),
               ),
             );
           }
 
-          final readinessColor = _readinessColor(_readinessPercent);
-
           return ListView(
             padding: EdgeInsets.all(AppSpacing.lg),
             children: [
-              Container(
-                padding: EdgeInsets.all(AppSpacing.xl),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primaryDark, AppColors.primary, Colors.indigo.shade400],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: AppBorderRadius.large,
-                  boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 12))],
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 76,
-                      height: 76,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SizedBox(
-                            width: 76,
-                            height: 76,
-                            child: CircularProgressIndicator(
-                              value: _readinessPercent / 100,
-                              strokeWidth: 6,
-                              backgroundColor: Colors.white.withValues(alpha: 0.15),
-                              valueColor: AlwaysStoppedAnimation(readinessColor == AppColors.error ? Colors.orangeAccent : Colors.greenAccent),
-                            ),
-                          ),
-                          Text("$_readinessPercent%", style: AppTypography.headlineLarge.copyWith(color: AppColors.textLight, fontSize: 18)),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.lg),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("SKILL READINESS", style: AppTypography.sectionHeader.copyWith(color: Colors.white70, letterSpacing: 2)),
-                          SizedBox(height: AppSpacing.xs),
-                          Text("Based on your skills + resume", style: AppTypography.caption.copyWith(color: Colors.white60)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              SkillReadinessHeroCard(readinessPercent: _readinessPercent),
               SizedBox(height: AppSpacing.xl),
               Row(children: [
                 Icon(Icons.work_outline, size: 18, color: AppColors.primary),
@@ -228,42 +176,16 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
                 Text("TARGET ROLE", style: AppTypography.sectionHeader.copyWith(color: AppColors.primary)),
               ]),
               SizedBox(height: AppSpacing.md),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                decoration: AppDecorations.card(),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<Map<String, dynamic>>(
-                    isExpanded: true,
-                    value: _selectedJob,
-                    icon: Icon(Icons.expand_more, color: AppColors.primary),
-                    items: _jobs
-                        .map((j) => DropdownMenuItem(
-                              value: j,
-                              child: Text("${j['title']} @ ${j['company']}",
-                                  style: AppTypography.bodyMediumBold, overflow: TextOverflow.ellipsis),
-                            ))
-                        .toList(),
-                    onChanged: (v) {
-                      if (v != null) _analyzeJob(v);
-                    },
-                  ),
-                ),
+              SkillTargetJobDropdown(
+                jobs: _jobs,
+                selectedJob: _selectedJob,
+                onChanged: (v) {
+                  if (v != null) _analyzeJob(v);
+                },
               ),
               SizedBox(height: AppSpacing.xl),
               if (_matchedKeywords.isNotEmpty) ...[
-                Text("SKILLS YOU ALREADY HAVE", style: AppTypography.sectionHeader),
-                SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: _matchedKeywords
-                      .map((k) => Container(
-                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                            decoration: AppDecorations.pill(AppColors.success),
-                            child: Text(k, style: AppTypography.captionBold.copyWith(color: AppColors.success)),
-                          ))
-                      .toList(),
-                ),
+                MatchedSkillsWrap(matchedKeywords: _matchedKeywords),
                 SizedBox(height: AppSpacing.xl),
               ],
               Row(children: [
@@ -275,50 +197,13 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
               if (_loadingGap)
                 const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()))
               else if (_gaps.isEmpty)
-                Container(
-                  padding: EdgeInsets.all(AppSpacing.lg),
-                  decoration: AppDecorations.card(),
-                  child: Text("No gaps found for this role — nice work!",
-                      style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
-                )
+                const SkillGapEmptyCard()
               else
-                ..._gaps.map((g) => Container(
-                      margin: EdgeInsets.only(bottom: AppSpacing.md),
-                      padding: EdgeInsets.all(AppSpacing.lg),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [AppColors.warning.withValues(alpha: 0.06), AppColors.surface],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight),
-                        borderRadius: AppBorderRadius.medium,
-                        border: Border.all(color: AppColors.warning.withValues(alpha: 0.2)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(children: [
-                            Container(
-                              padding: EdgeInsets.all(AppSpacing.sm),
-                              decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.14), shape: BoxShape.circle),
-                              child: Icon(Icons.priority_high_rounded, color: AppColors.warning, size: 16),
-                            ),
-                            SizedBox(width: AppSpacing.md),
-                            Text(g['skill']!.toString().toUpperCase(),
-                                style: AppTypography.bodyMediumBold.copyWith(color: AppColors.warning)),
-                          ]),
-                          if (g['reason']!.isNotEmpty) ...[
-                            SizedBox(height: AppSpacing.sm),
-                            Padding(
-                              padding: EdgeInsets.only(left: 44),
-                              child: Text(g['reason']!, style: AppTypography.bodySmall),
-                            ),
-                          ],
-                        ],
-                      ),
-                    )),
+                ..._gaps.map((g) => SkillGapItemCard(gap: g)),
               if (_gapError != null) ...[
                 SizedBox(height: AppSpacing.md),
-                Text("Couldn't generate AI explanations: $_gapError", style: AppTypography.caption.copyWith(color: AppColors.error)),
+                Text("Couldn't generate AI explanations: $_gapError",
+                    style: AppTypography.caption.copyWith(color: AppColors.error)),
               ],
               const SizedBox(height: 40),
             ],
