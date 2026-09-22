@@ -25,7 +25,7 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
   void initState() {
     super.initState();
     _candidatesFuture = _fetchCandidates();
-    _candidatesFuture.then((rows) => _trackProfileViews(rows));
+    _candidatesFuture.then(_trackProfileViews);
     _loadSavedCandidateIds();
   }
 
@@ -42,31 +42,19 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
       final profileId = c['profiles']?['id']?.toString();
       if (profileId != null && profileId.isNotEmpty && !_viewedCandidateIds.contains(profileId)) {
         _viewedCandidateIds.add(profileId);
-        Supabase.instance.client.rpc('increment_profile_views', params: {
-          'target_profile_id': profileId,
-        });
+        Supabase.instance.client.rpc('increment_profile_views', params: {'target_profile_id': profileId});
       }
     }
   }
 
   Future<void> _loadSavedCandidateIds() async {
-    final ids = await _fetchSavedCandidateIds();
-    if (mounted) setState(() => _savedCandidateIds.addAll(ids));
-  }
-
-  Future<Set<String>> _fetchSavedCandidateIds() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return <String>{};
-
-    final data = await Supabase.instance.client
-        .from('saved_candidates')
-        .select('candidate_id')
-        .eq('recruiter_id', userId);
-
-    return (data as List<dynamic>)
-        .map((row) => (row as Map<String, dynamic>)['candidate_id']?.toString() ?? '')
-        .where((id) => id.isNotEmpty)
-        .toSet();
+    if (userId == null) return;
+    try {
+      final data = await Supabase.instance.client.from('saved_candidates').select('candidate_id').eq('recruiter_id', userId);
+      final ids = (data as List).map((r) => r['candidate_id']?.toString() ?? '').where((id) => id.isNotEmpty).toSet();
+      if (mounted) setState(() => _savedCandidateIds.addAll(ids));
+    } catch (_) {}
   }
 
   Future<void> _toggleSaveCandidate(String candidateId) async {
@@ -74,62 +62,34 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
     if (userId == null || candidateId.isEmpty) return;
 
     final isSaved = _savedCandidateIds.contains(candidateId);
-    setState(() {
-      if (isSaved) {
-        _savedCandidateIds.remove(candidateId);
-      } else {
-        _savedCandidateIds.add(candidateId);
-      }
-    });
+    setState(() => isSaved ? _savedCandidateIds.remove(candidateId) : _savedCandidateIds.add(candidateId));
 
     try {
       if (isSaved) {
-        await Supabase.instance.client
-            .from('saved_candidates')
-            .delete()
-            .eq('recruiter_id', userId)
-            .eq('candidate_id', candidateId);
+        await Supabase.instance.client.from('saved_candidates').delete().eq('recruiter_id', userId).eq('candidate_id', candidateId);
       } else {
-        await Supabase.instance.client.from('saved_candidates').insert({
-          'recruiter_id': userId,
-          'candidate_id': candidateId,
-        });
+        await Supabase.instance.client.from('saved_candidates').insert({'recruiter_id': userId, 'candidate_id': candidateId});
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isSaved ? 'Candidate removed from saved' : 'Candidate saved'),
-            duration: const Duration(seconds: 1),
-          ),
+          SnackBar(content: Text(isSaved ? 'Candidate removed from saved' : 'Candidate saved'), duration: const Duration(seconds: 1)),
         );
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          if (isSaved) {
-            _savedCandidateIds.add(candidateId);
-          } else {
-            _savedCandidateIds.remove(candidateId);
-          }
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update saved candidate: $e')),
-        );
+        setState(() => isSaved ? _savedCandidateIds.add(candidateId) : _savedCandidateIds.remove(candidateId));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update saved candidate: $e')));
       }
     }
   }
 
   Future<void> _viewResume(String? resumePath) async {
     if (resumePath == null || resumePath.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No resume uploaded")),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No resume uploaded")));
       return;
     }
     try {
-      final signedUrl = await Supabase.instance.client.storage
-          .from('resumes')
-          .createSignedUrl(resumePath, 60 * 5);
+      final signedUrl = await Supabase.instance.client.storage.from('resumes').createSignedUrl(resumePath, 60 * 5);
       final uri = Uri.parse(signedUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -138,9 +98,7 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to load resume: $e"), backgroundColor: AppColors.error),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to load resume: $e"), backgroundColor: AppColors.error));
       }
     }
   }
@@ -152,19 +110,15 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
           .update({'status': 'offer_sent', 'status_updated_at': DateTime.now().toIso8601String()})
           .eq('id', applicationId);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text("Offer Sent"), backgroundColor: AppColors.info),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text("Offer Sent"), backgroundColor: AppColors.info));
         setState(() {
           _candidatesFuture = _fetchCandidates();
-          _candidatesFuture.then((rows) => _trackProfileViews(rows));
+          _candidatesFuture.then(_trackProfileViews);
         });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to send offer: $e"), backgroundColor: AppColors.error),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to send offer: $e"), backgroundColor: AppColors.error));
       }
     }
   }
@@ -184,14 +138,12 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
             if (mounted) {
               setState(() {
                 _candidatesFuture = _fetchCandidates();
-                _candidatesFuture.then((rows) => _trackProfileViews(rows));
+                _candidatesFuture.then(_trackProfileViews);
               });
             }
           } catch (e) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Failed to save: $e"), backgroundColor: AppColors.error),
-              );
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to save: $e"), backgroundColor: AppColors.error));
             }
           }
         },
@@ -206,23 +158,17 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
       final row = await Supabase.instance.client
           .from('conversations')
           .upsert(
-            {
-              'candidate_id': candidateId,
-              'recruiter_id': userId,
-              'job_title': jobTitle,
-              'company_name': companyName,
-            },
+            {'candidate_id': candidateId, 'recruiter_id': userId, 'job_title': jobTitle, 'company_name': companyName},
             onConflict: 'candidate_id,recruiter_id',
           )
           .select('id')
           .single();
-      final conversationId = row['id'].toString();
       if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (c) => ChatScreen(
-              conversationId: conversationId,
+              conversationId: row['id'].toString(),
               otherPartyName: candidateName,
               contextLabel: "$jobTitle · $companyName",
             ),
@@ -230,9 +176,7 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to open conversation: $e")));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to open conversation: $e")));
     }
   }
 
@@ -256,20 +200,14 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
             return Center(child: Text("Error: ${snapshot.error}", style: AppTypography.bodyMedium));
           }
           final all = snapshot.data ?? [];
-
-          final counts = <String, int>{};
-          for (final s in _statusOptions.skip(1)) {
-            counts[s] = all.where((c) => c['status'] == s).length;
-          }
+          final counts = <String, int>{for (final s in _statusOptions.skip(1)) s: all.where((c) => c['status'] == s).length};
 
           final filtered = all.where((c) {
             final matchesStatus = _statusFilter == 'all' || c['status'] == _statusFilter;
             final name = (c['profiles']?['full_name'] ?? '').toString().toLowerCase();
             final job = (c['job_title'] ?? '').toString().toLowerCase();
-            final matchesSearch = _searchQuery.isEmpty ||
-                name.contains(_searchQuery.toLowerCase()) ||
-                job.contains(_searchQuery.toLowerCase());
-            return matchesStatus && matchesSearch;
+            final q = _searchQuery.toLowerCase();
+            return matchesStatus && (_searchQuery.isEmpty || name.contains(q) || job.contains(q));
           }).toList();
 
           return Column(
