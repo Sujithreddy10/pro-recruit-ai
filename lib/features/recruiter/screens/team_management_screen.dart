@@ -29,6 +29,12 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
     _teamFuture = _fetchTeam();
   }
 
+  @override
+  void dispose() {
+    _inviteEmailCtrl.dispose();
+    super.dispose();
+  }
+
   void _refresh() {
     setState(() => _teamFuture = _fetchTeam());
   }
@@ -85,22 +91,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
   Future<void> _confirmRemove(Map<String, dynamic> member) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
-        title: Text("Remove ${member['full_name'] ?? 'this teammate'}?", style: AppTypography.titleMedium),
-        content: Text(
-          "They will lose access to the recruiter console immediately. This can't be undone.",
-          style: AppTypography.bodyMedium,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text("Remove", style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
+      builder: (ctx) => TeamRemoveMemberDialog(memberName: member['full_name']),
     );
 
     if (confirmed != true) return;

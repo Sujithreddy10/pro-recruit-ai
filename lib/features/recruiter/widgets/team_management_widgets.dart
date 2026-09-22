@@ -298,3 +298,29 @@ class TeamInviteSheet extends StatelessWidget {
     );
   }
 }
+
+class TeamRemoveMemberDialog extends StatelessWidget {
+  final String? memberName;
+
+  const TeamRemoveMemberDialog({super.key, this.memberName});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
+      title: Text("Remove ${memberName ?? 'this teammate'}?", style: AppTypography.titleMedium),
+      content: Text(
+        "They will lose access to the recruiter console immediately. This can't be undone.",
+        style: AppTypography.bodyMedium,
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text("Remove", style: TextStyle(color: AppColors.error)),
+        ),
+      ],
+    );
+  }
+}
