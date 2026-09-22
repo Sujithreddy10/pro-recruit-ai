@@ -199,21 +199,6 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
     );
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'shortlisted':
-        return AppColors.success;
-      case 'offer_sent':
-        return AppColors.info;
-      case 'hired':
-        return Colors.teal;
-      case 'rejected':
-        return AppColors.error;
-      default:
-        return AppColors.warning;
-    }
-  }
-
   Future<void> _startOrOpenConversation(String candidateId, String candidateName, String jobTitle, String companyName) async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null || candidateId.isEmpty) return;
@@ -289,21 +274,7 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
 
           return Column(
             children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(30)),
-                  child: TextField(
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                    decoration: const InputDecoration(
-                      hintText: "Search candidates, roles...",
-                      prefixIcon: Icon(Icons.search, color: Colors.deepOrange),
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-              ),
+              CandidateCrmSearchBar(onChanged: (v) => setState(() => _searchQuery = v)),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: CandidateCrmFilterBar(
@@ -316,16 +287,7 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
               SizedBox(height: AppSpacing.md),
               Expanded(
                 child: filtered.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.filter_alt_off_outlined, size: 40, color: AppColors.textMuted.withValues(alpha: 0.4)),
-                            SizedBox(height: AppSpacing.sm),
-                            Text("No candidates found.", style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
-                          ],
-                        ),
-                      )
+                    ? const CandidateCrmEmptyView()
                     : ListView.builder(
                         padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
                         itemCount: filtered.length,
@@ -335,7 +297,7 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
                           final name = profile?['full_name'] ?? 'Unknown Candidate';
                           final resumePath = profile?['resume_path'];
                           final status = (c['status'] ?? 'applied').toString();
-                          final color = _statusColor(status);
+                          final color = getCandidateStatusColor(status);
                           final profileId = (profile?['id'] ?? '').toString();
 
                           return CandidateCrmCard(

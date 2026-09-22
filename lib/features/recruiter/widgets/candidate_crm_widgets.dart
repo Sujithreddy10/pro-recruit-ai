@@ -324,3 +324,67 @@ class _NotesAndRatingDialogState extends State<NotesAndRatingDialog> {
     );
   }
 }
+
+Color getCandidateStatusColor(String status) {
+  switch (status) {
+    case 'shortlisted':
+      return AppColors.success;
+    case 'offer_sent':
+      return AppColors.info;
+    case 'hired':
+      return Colors.teal;
+    case 'rejected':
+      return AppColors.error;
+    default:
+      return AppColors.warning;
+  }
+}
+
+class CandidateCrmSearchBar extends StatelessWidget {
+  final ValueChanged<String> onChanged;
+
+  const CandidateCrmSearchBar({super.key, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: TextField(
+          onChanged: onChanged,
+          decoration: const InputDecoration(
+            hintText: "Search candidates, roles...",
+            prefixIcon: Icon(Icons.search, color: Colors.deepOrange),
+            border: InputBorder.none,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CandidateCrmEmptyView extends StatelessWidget {
+  const CandidateCrmEmptyView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.filter_alt_off_outlined, size: 40, color: AppColors.textMuted.withValues(alpha: 0.4)),
+          SizedBox(height: AppSpacing.sm),
+          Text(
+            "No candidates found.",
+            style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted),
+          ),
+        ],
+      ),
+    );
+  }
+}
