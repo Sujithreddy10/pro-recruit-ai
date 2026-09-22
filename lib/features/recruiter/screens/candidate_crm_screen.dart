@@ -43,23 +43,15 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
       if (profileId != null && profileId.isNotEmpty && !_viewedCandidateIds.contains(profileId)) {
         _viewedCandidateIds.add(profileId);
         Supabase.instance.client.rpc('increment_profile_views', params: {
-          'target_user_id': profileId,
-        }).catchError((_) {});
+          'target_profile_id': profileId,
+        });
       }
     }
   }
 
   Future<void> _loadSavedCandidateIds() async {
-    try {
-      final saved = await _fetchSavedCandidateIds();
-      if (mounted) {
-        setState(() {
-          _savedCandidateIds
-            ..clear()
-            ..addAll(saved);
-        });
-      }
-    } catch (_) {}
+    final ids = await _fetchSavedCandidateIds();
+    if (mounted) setState(() => _savedCandidateIds.addAll(ids));
   }
 
   Future<Set<String>> _fetchSavedCandidateIds() async {
@@ -178,75 +170,33 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
   }
 
   Future<void> _editNotesAndRatingDialog(Map<String, dynamic> c) async {
-    final notesCtrl = TextEditingController(text: c['recruiter_notes'] ?? '');
-    int rating = (c['recruiter_rating'] as int?) ?? 0;
-    final result = await showDialog<bool>(
+    await showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
-          title: Text("Notes & Rating", style: AppTypography.titleMedium),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Rating", style: AppTypography.bodySmallBold),
-                SizedBox(height: AppSpacing.xs),
-                Row(
-                  children: List.generate(
-                    5,
-                    (i) => IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: Icon(
-                        i < rating ? Icons.star : Icons.star_border,
-                        color: Colors.amber,
-                        size: 28,
-                      ),
-                      onPressed: () => setDialogState(() => rating = i + 1),
-                    ),
-                  ),
-                ),
-                SizedBox(height: AppSpacing.md),
-                TextField(
-                  controller: notesCtrl,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    labelText: "Private Notes",
-                    hintText: "Only visible to your recruiting team",
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
-            ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Save")),
-          ],
-        ),
+      builder: (ctx) => NotesAndRatingDialog(
+        initialNotes: c['recruiter_notes'] as String?,
+        initialRating: c['recruiter_rating'] as int?,
+        onSave: (notes, rating) async {
+          try {
+            await Supabase.instance.client.from('applications').update({
+              'recruiter_notes': notes,
+              'recruiter_rating': rating,
+            }).eq('id', c['id']);
+            if (mounted) {
+              setState(() {
+                _candidatesFuture = _fetchCandidates();
+                _candidatesFuture.then((rows) => _trackProfileViews(rows));
+              });
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Failed to save: $e"), backgroundColor: AppColors.error),
+              );
+            }
+          }
+        },
       ),
     );
-    if (result == true) {
-      try {
-        await Supabase.instance.client.from('applications').update({
-          'recruiter_notes': notesCtrl.text.trim(),
-          'recruiter_rating': rating == 0 ? null : rating,
-        }).eq('id', c['id']);
-        if (mounted) {
-          setState(() {
-            _candidatesFuture = _fetchCandidates();
-            _candidatesFuture.then((rows) => _trackProfileViews(rows));
-          });
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to save: $e"), backgroundColor: AppColors.error),
-          );
-        }
-      }
-    }
   }
 
   Color _statusColor(String status) {

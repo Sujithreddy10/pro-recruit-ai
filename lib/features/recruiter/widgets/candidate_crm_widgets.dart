@@ -232,3 +232,95 @@ class CandidateCrmCard extends StatelessWidget {
     );
   }
 }
+
+class NotesAndRatingDialog extends StatefulWidget {
+  final String? initialNotes;
+  final int? initialRating;
+  final void Function(String notes, int? rating) onSave;
+
+  const NotesAndRatingDialog({
+    super.key,
+    this.initialNotes,
+    this.initialRating,
+    required this.onSave,
+  });
+
+  @override
+  State<NotesAndRatingDialog> createState() => _NotesAndRatingDialogState();
+}
+
+class _NotesAndRatingDialogState extends State<NotesAndRatingDialog> {
+  late final TextEditingController _notesCtrl;
+  late int _rating;
+
+  @override
+  void initState() {
+    super.initState();
+    _notesCtrl = TextEditingController(text: widget.initialNotes ?? '');
+    _rating = widget.initialRating ?? 0;
+  }
+
+  @override
+  void dispose() {
+    _notesCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.medium),
+      title: Text("Notes & Rating", style: AppTypography.titleMedium),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Rating", style: AppTypography.bodySmallBold),
+            SizedBox(height: AppSpacing.xs),
+            Row(
+              children: List.generate(
+                5,
+                (i) => IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: Icon(
+                    i < _rating ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 28,
+                  ),
+                  onPressed: () => setState(() => _rating = i + 1),
+                ),
+              ),
+            ),
+            SizedBox(height: AppSpacing.md),
+            TextField(
+              controller: _notesCtrl,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: "Private Notes",
+                hintText: "Only visible to your recruiting team",
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            widget.onSave(
+              _notesCtrl.text.trim(),
+              _rating == 0 ? null : _rating,
+            );
+          },
+          child: const Text("Save"),
+        ),
+      ],
+    );
+  }
+}
