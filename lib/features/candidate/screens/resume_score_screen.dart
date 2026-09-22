@@ -62,8 +62,14 @@ class _ResumeScoreScreenState extends State<ResumeScoreScreen> {
         setState(() => _jobMatch = Map<String, dynamic>.from(data['jobMatch']));
       }
 
-      final score = (data['score'] as num?)?.toInt() ?? 50;
-      final checks = (data['checks'] as List<dynamic>?)?.map((c) => Map<String, dynamic>.from(c as Map)).toList() ?? [];
+      final generalData = (data['general'] is Map)
+          ? Map<String, dynamic>.from(data['general'] as Map)
+          : data;
+      final score = (generalData['score'] as num?)?.toInt() ?? 50;
+      final checks = (generalData['checks'] as List<dynamic>?)
+              ?.map((c) => Map<String, dynamic>.from(c as Map))
+              .toList() ??
+          [];
 
       return ResumeAnalysisData(hasResume: true, score: score, checks: checks);
     } catch (e) {
