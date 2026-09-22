@@ -286,42 +286,15 @@ class _CandidateCRMScreenState extends State<CandidateCRMScreen> {
               ),
               SizedBox(height: AppSpacing.md),
               Expanded(
-                child: filtered.isEmpty
-                    ? const CandidateCrmEmptyView()
-                    : ListView.builder(
-                        padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, i) {
-                          final c = filtered[i];
-                          final profile = c['profiles'];
-                          final name = profile?['full_name'] ?? 'Unknown Candidate';
-                          final resumePath = profile?['resume_path'];
-                          final status = (c['status'] ?? 'applied').toString();
-                          final color = getCandidateStatusColor(status);
-                          final profileId = (profile?['id'] ?? '').toString();
-
-                          return CandidateCrmCard(
-                            name: name,
-                            resumePath: resumePath,
-                            jobTitle: (c['job_title'] ?? 'N/A').toString(),
-                            companyName: (c['company_name'] ?? 'N/A').toString(),
-                            status: status,
-                            statusColor: color,
-                            rating: (c['recruiter_rating'] as int?) ?? 0,
-                            isSaved: _savedCandidateIds.contains(profileId),
-                            onViewResume: () => _viewResume(resumePath),
-                            onMessage: () => _startOrOpenConversation(
-                              profileId,
-                              name,
-                              (c['job_title'] ?? '').toString(),
-                              (c['company_name'] ?? '').toString(),
-                            ),
-                            onEditNotesAndRating: () => _editNotesAndRatingDialog(c),
-                            onToggleSave: () => _toggleSaveCandidate(profileId),
-                            onSendOffer: status == 'shortlisted' ? () => _sendOffer(c['id']) : null,
-                          );
-                        },
-                      ),
+                child: CandidateCrmListView(
+                  candidates: filtered,
+                  savedCandidateIds: _savedCandidateIds,
+                  onViewResume: _viewResume,
+                  onMessage: _startOrOpenConversation,
+                  onEditNotesAndRating: _editNotesAndRatingDialog,
+                  onToggleSave: _toggleSaveCandidate,
+                  onSendOffer: _sendOffer,
+                ),
               ),
             ],
           );

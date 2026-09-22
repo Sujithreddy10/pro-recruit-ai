@@ -388,3 +388,66 @@ class CandidateCrmEmptyView extends StatelessWidget {
     );
   }
 }
+
+class CandidateCrmListView extends StatelessWidget {
+  final List<Map<String, dynamic>> candidates;
+  final Set<String> savedCandidateIds;
+  final void Function(String? resumePath) onViewResume;
+  final void Function(String candidateId, String name, String jobTitle, String companyName) onMessage;
+  final void Function(Map<String, dynamic> candidate) onEditNotesAndRating;
+  final void Function(String candidateId) onToggleSave;
+  final void Function(int applicationId) onSendOffer;
+
+  const CandidateCrmListView({
+    super.key,
+    required this.candidates,
+    required this.savedCandidateIds,
+    required this.onViewResume,
+    required this.onMessage,
+    required this.onEditNotesAndRating,
+    required this.onToggleSave,
+    required this.onSendOffer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (candidates.isEmpty) {
+      return const CandidateCrmEmptyView();
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+      itemCount: candidates.length,
+      itemBuilder: (context, i) {
+        final c = candidates[i];
+        final profile = c['profiles'];
+        final name = profile?['full_name'] ?? 'Unknown Candidate';
+        final resumePath = profile?['resume_path'];
+        final status = (c['status'] ?? 'applied').toString();
+        final color = getCandidateStatusColor(status);
+        final profileId = (profile?['id'] ?? '').toString();
+
+        return CandidateCrmCard(
+          name: name,
+          resumePath: resumePath,
+          jobTitle: (c['job_title'] ?? 'N/A').toString(),
+          companyName: (c['company_name'] ?? 'N/A').toString(),
+          status: status,
+          statusColor: color,
+          rating: (c['recruiter_rating'] as int?) ?? 0,
+          isSaved: savedCandidateIds.contains(profileId),
+          onViewResume: () => onViewResume(resumePath),
+          onMessage: () => onMessage(
+            profileId,
+            name,
+            (c['job_title'] ?? '').toString(),
+            (c['company_name'] ?? '').toString(),
+          ),
+          onEditNotesAndRating: () => onEditNotesAndRating(c),
+          onToggleSave: () => onToggleSave(profileId),
+          onSendOffer: status == 'shortlisted' ? () => onSendOffer(c['id']) : null,
+        );
+      },
+    );
+  }
+}
