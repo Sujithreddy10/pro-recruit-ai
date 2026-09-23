@@ -239,7 +239,12 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
 
         return SafeArea(
           child: Padding(
-            padding: EdgeInsets.all(AppSpacing.lg),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.sm + kToolbarHeight,
+              AppSpacing.lg,
+              AppSpacing.lg,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
