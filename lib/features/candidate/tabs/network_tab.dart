@@ -86,18 +86,15 @@ class _NetworkTabState extends State<NetworkTab> with AutomaticKeepAliveClientMi
           child: ListView(
             padding: EdgeInsets.all(AppSpacing.lg),
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 48.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.hub_outlined, color: AppColors.primary, size: 24),
-                    SizedBox(width: AppSpacing.sm),
-                    Text(
-                      "Talent Ecosystem",
-                      style: AppTypography.headlineLarge.copyWith(color: AppColors.primary),
-                    ),
-                  ],
-                ),
+              Row(
+                children: [
+                  Icon(Icons.hub_outlined, color: AppColors.primary, size: 24),
+                  SizedBox(width: AppSpacing.sm),
+                  Text(
+                    "Talent Ecosystem",
+                    style: AppTypography.headlineLarge.copyWith(color: AppColors.primary),
+                  ),
+                ],
               ),
               SizedBox(height: AppSpacing.md),
               Container(

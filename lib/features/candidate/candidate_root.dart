@@ -54,23 +54,20 @@ class _MainNavigationState extends State<MainNavigation> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: _professionalDrawer(),
-      body: Stack(
-        children: [
-          AnimatedBackgroundWrapper(
-            child: IndexedStack(
-              index: _idx,
-              children: _tabs,
-            ),
-          ),
-          Positioned(
-            top: 50,
-            left: 10,
-            child: IconButton(
-              icon: Icon(Icons.menu, color: AppColors.primary),
-              onPressed: () => _scaffoldKey.currentState!.openDrawer(),
-            ),
-          ),
-        ],
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: AppColors.primary),
+          onPressed: () => _scaffoldKey.currentState!.openDrawer(),
+        ),
+      ),
+      body: AnimatedBackgroundWrapper(
+        child: IndexedStack(
+          index: _idx,
+          children: _tabs,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _idx,
