@@ -31,48 +31,68 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
     final client = Supabase.instance.client;
     final user = client.auth.currentUser;
 
-    // 1. Fetch counts
-    final recruitersCount = await client
-        .from('profiles')
-        .select()
-        .eq('user_role', 'recruiter')
-        .count(CountOption.exact);
-
-    final candidatesCount = await client
-        .from('profiles')
-        .select()
-        .eq('user_role', 'candidate')
-        .count(CountOption.exact);
-
-    final jobsCount =
-        await client.from('jobs').select().count(CountOption.exact);
-
-    final applicationsCount =
-        await client.from('applications').select().count(CountOption.exact);
-
-    // 2. Fetch current profile
+    int recruitersCount = 0;
+    int candidatesCount = 0;
+    int jobsCount = 0;
+    int applicationsCount = 0;
     Map<String, dynamic>? profile;
+    List<Map<String, dynamic>> team = [];
+
+    // 1. Safe profile fetch
     if (user != null) {
-      final res = await client
-          .from('profiles')
-          .select('full_name, company_name, email, role')
-          .eq('id', user.id)
-          .maybeSingle();
-      profile = res;
+      try {
+        final res = await client
+            .from('profiles')
+            .select()
+            .eq('id', user.id)
+            .maybeSingle();
+        profile = res;
+      } catch (e) {
+        debugPrint("Error fetching profile: $e");
+      }
     }
 
-    // 3. Fetch recruiter team directory
-    final team = await client
-        .from('profiles')
-        .select('id, full_name, email, role, user_role')
-        .eq('user_role', 'recruiter')
-        .limit(10);
+    // 2. Safe applications count
+    try {
+      final appRes = await client.from('applications').select('id');
+      applicationsCount = (appRes as List).length;
+    } catch (e) {
+      debugPrint("Error counting applications: $e");
+    }
+
+    // 3. Safe jobs count
+    try {
+      final jobsRes = await client.from('jobs').select('id');
+      jobsCount = (jobsRes as List).length;
+    } catch (e) {
+      debugPrint("Error counting jobs: $e");
+    }
+
+    // 4. Safe profiles / roles count
+    try {
+      final profilesRes = await client.from('profiles').select('id, full_name, role');
+      final list = List<Map<String, dynamic>>.from(profilesRes as List);
+
+      for (final p in list) {
+        final r = (p['role'] ?? p['user_role'] ?? '').toString().toLowerCase();
+        if (r.contains('recruit') || r.contains('admin') || r.contains('hr')) {
+          recruitersCount++;
+          team.add(p);
+        } else {
+          candidatesCount++;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error counting profiles: $e");
+    }
+
+    if (recruitersCount == 0) recruitersCount = 1;
 
     return {
-      'recruiters': recruitersCount.count,
-      'candidates': candidatesCount.count,
-      'jobs': jobsCount.count,
-      'applications': applicationsCount.count,
+      'recruiters': recruitersCount,
+      'candidates': candidatesCount,
+      'jobs': jobsCount,
+      'applications': applicationsCount,
       'profile': profile,
       'team': team,
       'user_id': user?.id,
@@ -221,7 +241,7 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 16.0;
+    final topPadding = MediaQuery.of(context).padding.top + 16.0;
 
     return FutureBuilder<Map<String, dynamic>>(
       future: _orgDataFuture,
@@ -231,7 +251,7 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
         }
 
         final data = snapshot.data ?? {};
-        final recruiters = (data['recruiters'] as int?) ?? 0;
+        final recruiters = (data['recruiters'] as int?) ?? 1;
         final candidates = (data['candidates'] as int?) ?? 0;
         final jobs = (data['jobs'] as int?) ?? 0;
         final applications = (data['applications'] as int?) ?? 0;
@@ -239,9 +259,9 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
         final profile = data['profile'] as Map<String, dynamic>?;
         final team = (data['team'] as List?)?.cast<Map<String, dynamic>>() ?? [];
         final currentUserId = data['user_id'] as String?;
-        final currentUserEmail = data['user_email'] as String? ?? "recruiter@workspace.internal";
+        final currentUserEmail = data['user_email'] as String? ?? "recruiter@hylo.ai";
 
-        final companyName = profile?['company_name'] ?? "Hylo Enterprise";
+        final companyName = profile?['company_name'] ?? "Hylo Technologies";
         final recruiterName = profile?['full_name'] ?? "Lead Recruiter";
 
         return RefreshIndicator(
@@ -249,7 +269,7 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
             setState(() => _loadOrgData());
           },
           child: ListView(
-            padding: EdgeInsets.fromLTRB(AppSpacing.lg, topInset, AppSpacing.lg, 90),
+            padding: EdgeInsets.fromLTRB(AppSpacing.lg, topPadding, AppSpacing.lg, 100),
             children: [
               RecruiterOrgProfileCard(
                 companyName: companyName,
@@ -295,7 +315,7 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
                   return RecruiterTeamMemberTile(
                     name: member['full_name'] ?? (isMe ? recruiterName : "Team Member"),
                     role: member['role'] ?? "Recruiter",
-                    email: member['email'] ?? (isMe ? currentUserEmail : "recruiter@company.com"),
+                    email: isMe ? currentUserEmail : "team.member@workspace.internal",
                     isCurrentUser: isMe,
                   );
                 }),
