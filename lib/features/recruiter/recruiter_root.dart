@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 import 'package:pro_recruit_ai/shared/common_widgets.dart';
@@ -150,13 +149,12 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
       appBar: AppBar(
         actions: const [NotificationBell()],
         leading: IconButton(
-          icon: Icon(Icons.menu_open_rounded, color: AppColors.primary),
+          icon: Icon(Icons.menu, color: AppColors.primary),
           onPressed: () => _scafKey.currentState!.openDrawer(),
         ),
-        title: Text("Career Root Console", style: GoogleFonts.lobster(color: AppColors.primary)),
+        title: null,
         backgroundColor: AppColors.surface.withValues(alpha: 0.9),
         elevation: 0,
-        centerTitle: true,
       ),
       body: AnimatedBackgroundWrapper(
         child: IndexedStack(
@@ -177,7 +175,7 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textMuted,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: "Console"),
+          BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: "Dashboard"),
           BottomNavigationBarItem(icon: Icon(Icons.swipe_rounded), label: "Hiring"),
           BottomNavigationBarItem(icon: Icon(Icons.account_tree_outlined), label: "Pipeline"),
           BottomNavigationBarItem(icon: Icon(Icons.card_membership), label: "Offers"),

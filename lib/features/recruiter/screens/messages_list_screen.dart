@@ -70,14 +70,17 @@ class _RecruiterMessagesListScreenState extends State<RecruiterMessagesListScree
                 if ((conv['job_title'] ?? '').toString().isNotEmpty) conv['job_title'],
                 if ((conv['company_name'] ?? '').toString().isNotEmpty) conv['company_name'],
               ].join(' · ');
-              return Container(
-                margin: EdgeInsets.only(bottom: AppSpacing.sm),
-                decoration: BoxDecoration(
+              return Padding(
+                padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Material(
                   color: AppColors.surface,
                   borderRadius: AppBorderRadius.medium,
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: AppBorderRadius.medium,
+                    side: BorderSide(color: AppColors.border),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                     child: Text(candidateName.isNotEmpty ? candidateName[0].toUpperCase() : '?',
@@ -98,8 +101,9 @@ class _RecruiterMessagesListScreenState extends State<RecruiterMessagesListScree
                     ),
                   ),
                 ),
-              );
-            },
+              ),
+            );
+          },
           );
         },
       ),
