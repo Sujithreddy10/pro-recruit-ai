@@ -201,6 +201,8 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 8.0;
+
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _applicantsFuture,
       builder: (context, snapshot) {
@@ -237,84 +239,82 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
             ? allApplicants
             : allApplicants.where((a) => (a['job_title'] ?? 'General') == _selectedRole).toList();
 
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.sm + kToolbarHeight,
-              AppSpacing.lg,
-              AppSpacing.lg,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const RecruiterHeaderStats(),
-                SizedBox(height: AppSpacing.md),
-                _buildRolePills(allApplicants),
-                SizedBox(height: AppSpacing.md),
-                Expanded(
-                  child: filteredApplicants.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            topInset,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const RecruiterHeaderStats(),
+              SizedBox(height: AppSpacing.md),
+              _buildRolePills(allApplicants),
+              SizedBox(height: AppSpacing.md),
+              Expanded(
+                child: filteredApplicants.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.done_all_rounded, size: 44, color: AppColors.primary),
+                            SizedBox(height: AppSpacing.sm),
+                            Text(
+                              "Queue cleared for $_selectedRole!",
+                              style: AppTypography.bodyMediumBold,
+                            ),
+                            SizedBox(height: AppSpacing.xs),
+                            TextButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _selectedRole = "All Roles";
+                                  _currentCandidateIdx = 0;
+                                });
+                              },
+                              icon: const Icon(Icons.refresh, size: 16),
+                              label: const Text("View All Roles"),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Builder(
+                        builder: (context) {
+                          final safeIdx = _currentCandidateIdx % filteredApplicants.length;
+                          final app = filteredApplicants[safeIdx];
+                          final name = app['profiles']?['full_name'] ?? 'Unknown Candidate';
+                          final role = app['job_title'] ?? 'N/A';
+                          final companyName = app['company_name'] ?? 'N/A';
+                          final status = app['status'] ?? 'applied';
+                          final color = _candidateColors[safeIdx % _candidateColors.length];
+
+                          return Column(
                             children: [
-                              Icon(Icons.done_all_rounded, size: 44, color: AppColors.primary),
-                              SizedBox(height: AppSpacing.sm),
-                              Text(
-                                "Queue cleared for $_selectedRole!",
-                                style: AppTypography.bodyMediumBold,
+                              Expanded(
+                                child: RecruiterSwipeDecisionCard(
+                                  name: name,
+                                  role: role,
+                                  companyName: companyName,
+                                  status: status.toString(),
+                                  createdAt: app['created_at']?.toString() ?? 'Unknown date',
+                                  accentColor: color,
+                                  onViewResume: () => _viewResume(app['profiles']?['resume_path']),
+                                  onReject: () => _handleDecision(false, app['id']),
+                                  onHire: () => _handleDecision(true, app['id']),
+                                ),
                               ),
                               SizedBox(height: AppSpacing.xs),
-                              TextButton.icon(
-                                onPressed: () {
-                                  setState(() {
-                                    _selectedRole = "All Roles";
-                                    _currentCandidateIdx = 0;
-                                  });
-                                },
-                                icon: const Icon(Icons.refresh, size: 16),
-                                label: const Text("View All Roles"),
+                              Text(
+                                "Queue: ${safeIdx + 1} / ${filteredApplicants.length}",
+                                style: AppTypography.caption.copyWith(color: AppColors.textMuted),
                               ),
                             ],
-                          ),
-                        )
-                      : Builder(
-                          builder: (context) {
-                            final safeIdx = _currentCandidateIdx % filteredApplicants.length;
-                            final app = filteredApplicants[safeIdx];
-                            final name = app['profiles']?['full_name'] ?? 'Unknown Candidate';
-                            final role = app['job_title'] ?? 'N/A';
-                            final companyName = app['company_name'] ?? 'N/A';
-                            final status = app['status'] ?? 'applied';
-                            final color = _candidateColors[safeIdx % _candidateColors.length];
-
-                            return Column(
-                              children: [
-                                Expanded(
-                                  child: RecruiterSwipeDecisionCard(
-                                    name: name,
-                                    role: role,
-                                    companyName: companyName,
-                                    status: status.toString(),
-                                    createdAt: app['created_at']?.toString() ?? 'Unknown date',
-                                    accentColor: color,
-                                    onViewResume: () => _viewResume(app['profiles']?['resume_path']),
-                                    onReject: () => _handleDecision(false, app['id']),
-                                    onHire: () => _handleDecision(true, app['id']),
-                                  ),
-                                ),
-                                SizedBox(height: AppSpacing.xs),
-                                Text(
-                                  "Queue: ${safeIdx + 1} / ${filteredApplicants.length}",
-                                  style: AppTypography.caption.copyWith(color: AppColors.textMuted),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           ),
         );
       },
