@@ -255,8 +255,8 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                             _updateStatus(item['id'], 'rejected', closeParent: false);
                           },
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.error,
-                            side: BorderSide(color: AppColors.error.withValues(alpha: 0.5)),
+                            foregroundColor: const Color(0xFFEF4444),
+                            side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                           child: const Text("Archive"),
