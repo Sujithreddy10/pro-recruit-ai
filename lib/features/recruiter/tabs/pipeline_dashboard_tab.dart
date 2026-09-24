@@ -15,6 +15,14 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
     with AutomaticKeepAliveClientMixin {
   late Future<List<Map<String, dynamic>>> _applicationsFuture;
   String _selectedRole = "All Roles";
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -255,11 +263,18 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                             _updateStatus(item['id'], 'rejected', closeParent: false);
                           },
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFFEF4444),
+                            foregroundColor: const Color(0xFFF87171),
+                            backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
                             side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
-                          child: const Text("Archive"),
+                          child: const Text(
+                            "Archive",
+                            style: TextStyle(
+                              color: Color(0xFFF87171),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
                   ],
@@ -430,6 +445,44 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
     );
   }
 
+  Widget _buildSearchBar() {
+    return Container(
+      height: 46,
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B2E),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (val) {
+          setState(() {
+            _searchQuery = val.trim().toLowerCase();
+          });
+        },
+        style: const TextStyle(color: Colors.white, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: "Search candidate name or title...",
+          hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          prefixIcon: Icon(Icons.search, size: 20, color: AppColors.textMuted),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 18, color: Colors.white70),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = "";
+                    });
+                  },
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRolePills(List<Map<String, dynamic>> allApplications) {
     final Map<String, int> counts = {"All Roles": allApplications.length};
     for (final app in allApplications) {
@@ -529,9 +582,14 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
         }
 
         final allApps = snapshot.data ?? [];
-        final visibleApps = _selectedRole == "All Roles"
-            ? allApps
-            : allApps.where((a) => (a['job_title'] ?? 'General') == _selectedRole).toList();
+        final visibleApps = allApps.where((a) {
+          final matchesRole = _selectedRole == "All Roles" || (a['job_title'] ?? 'General') == _selectedRole;
+          if (!matchesRole) return false;
+          if (_searchQuery.isEmpty) return true;
+          final name = (a['profiles']?['full_name'] ?? '').toString().toLowerCase();
+          final job = (a['job_title'] ?? '').toString().toLowerCase();
+          return name.contains(_searchQuery) || job.contains(_searchQuery);
+        }).toList();
 
         final counts = <String, int>{'applied': 0, 'shortlisted': 0, 'rejected': 0};
         for (final row in visibleApps) {
@@ -562,6 +620,8 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                     ? "Real-time candidate status across all roles"
                     : "Status funnel for $_selectedRole",
               ),
+              SizedBox(height: AppSpacing.md),
+              _buildSearchBar(),
               SizedBox(height: AppSpacing.md),
               _buildRolePills(allApps),
               SizedBox(height: AppSpacing.lg),
