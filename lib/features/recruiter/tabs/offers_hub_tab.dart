@@ -34,7 +34,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
     try {
       final data = await Supabase.instance.client
           .from('applications')
-          .select('id, job_title, company_name, created_at, profiles(full_name)')
+          .select('id, job_title, company_name, created_at, notes, profiles(full_name)')
           .eq('status', status)
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(data);
@@ -58,15 +58,18 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
     }
   }
 
-  Future<void> _updateStatus(int applicationId, String newStatus, String message) async {
+  Future<void> _updateStatus(int applicationId, String newStatus, String message, {String? notes}) async {
     setState(() => _busyApplicationId = applicationId);
+
+    final Map<String, dynamic> updateData = {'status': newStatus};
+    if (notes != null && notes.trim().isNotEmpty) {
+      updateData['notes'] = notes.trim();
+    }
 
     try {
       await Supabase.instance.client
           .from('applications')
-          .update({
-            'status': newStatus,
-          })
+          .update(updateData)
           .eq('id', applicationId);
 
       if (mounted) {
@@ -211,11 +214,13 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     child: ElevatedButton(
                       onPressed: () {
                         if (selectedAppId != null) {
+                          final ctc = ctcController.text.trim();
                           Navigator.pop(ctx);
                           _updateStatus(
                             selectedAppId!,
                             'offer_sent',
                             "Offer extended successfully!",
+                            notes: ctc.isNotEmpty ? ctc : null,
                           );
                         }
                       },
@@ -304,10 +309,12 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                       final date = (o['created_at'] ?? '').toString().split('T').first;
                       final isRowBusy = _busyApplicationId == o['id'];
 
+                      final compensation = o['notes'] as String?;
                       return RecruiterPendingOfferCard(
                         name: o['profiles']?['full_name'] ?? "Candidate #${o['id']}",
                         role: o['job_title'] ?? 'Role',
                         date: date.isNotEmpty ? date : null,
+                        compensation: compensation,
                         isLoading: isRowBusy,
                         onMarkAccepted: () => _updateStatus(o['id'], 'hired', "Candidate officially marked as Hired!"),
                         onCancelOffer: () => _updateStatus(o['id'], 'shortlisted', "Offer revoked, moved back to Shortlist"),
