@@ -346,7 +346,10 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                               ),
                               clipBehavior: Clip.antiAlias,
                               child: InkWell(
-                                onTap: () => _showCandidateDetailSheet(item),
+                                onTap: () {
+                                Navigator.pop(ctx);
+                                _showCandidateDetailSheet(item);
+                              },
                                 child: Padding(
                                   padding: EdgeInsets.all(AppSpacing.md),
                                   child: Row(
