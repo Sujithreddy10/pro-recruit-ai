@@ -228,8 +228,10 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
     super.build(context);
     final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 16.0;
 
-    return Stack(
-      children: [
+    return Container(
+      color: const Color(0xFF0B0F19),
+      child: Stack(
+        children: [
         FutureBuilder<List<List<Map<String, dynamic>>>>(
           future: _offersFuture,
           builder: (context, snapshot) {
@@ -257,7 +259,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     securedCount: secured.length,
                   ),
                   SizedBox(height: AppSpacing.xl),
-                  Text("PENDING OFFERS (${pending.length})", style: AppTypography.sectionHeader),
+                  Text("PENDING OFFERS (${pending.length})", style: AppTypography.sectionHeader.copyWith(color: const Color(0xFF94A3B8), fontWeight: FontWeight.w700, letterSpacing: 1.1)),
                   SizedBox(height: AppSpacing.md),
                   if (pending.isEmpty)
                     Container(
@@ -301,7 +303,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                       );
                     }),
                   SizedBox(height: AppSpacing.xxl),
-                  Text("RECENTLY HIRED (${secured.length})", style: AppTypography.sectionHeader),
+                  Text("RECENTLY HIRED (${secured.length})", style: AppTypography.sectionHeader.copyWith(color: const Color(0xFF94A3B8), fontWeight: FontWeight.w700, letterSpacing: 1.1)),
                   SizedBox(height: AppSpacing.md),
                   if (secured.isEmpty)
                     Container(
@@ -344,6 +346,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
           ),
         ),
       ],
-    );
+    ),
+  );
   }
 }
