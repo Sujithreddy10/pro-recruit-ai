@@ -119,9 +119,9 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                 MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF131B2E),
+                color: AppColors.surface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -138,24 +138,24 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     ),
                   ),
                   SizedBox(height: AppSpacing.md),
-                  Text("Extend Job Offer", style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+                  Text("Extend Job Offer", style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w700)),
                   Text(
                     "Select a shortlisted candidate to send an official offer",
                     style: AppTypography.caption.copyWith(color: AppColors.textMuted),
                   ),
                   SizedBox(height: AppSpacing.lg),
-                  Text("Select Candidate", style: AppTypography.captionBold.copyWith(color: Colors.white70)),
+                  Text("Select Candidate", style: AppTypography.captionBold.copyWith(color: AppColors.textSecondary)),
                   SizedBox(height: AppSpacing.xs),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+                      color: AppColors.surfaceAlt,
+                      border: Border.all(color: AppColors.border),
                       borderRadius: AppBorderRadius.small,
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<int>(
-                        dropdownColor: const Color(0xFF1E293B),
+                        dropdownColor: AppColors.surface,
                         value: selectedAppId,
                         isExpanded: true,
                         items: candidates.map((c) {
@@ -175,22 +175,22 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     ),
                   ),
                   SizedBox(height: AppSpacing.md),
-                  Text("Offered Compensation / CTC", style: AppTypography.captionBold.copyWith(color: Colors.white70)),
+                  Text("Offered Compensation / CTC", style: AppTypography.captionBold.copyWith(color: AppColors.textSecondary)),
                   SizedBox(height: AppSpacing.xs),
                   TextField(
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: r"e.g. ₹18,00,000 / annum or $120k",
                       hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
                       filled: true,
-                      fillColor: const Color(0xFF1E293B),
+                      fillColor: AppColors.surfaceAlt,
                       border: OutlineInputBorder(
                         borderRadius: AppBorderRadius.small,
-                        borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
+                        borderSide: BorderSide(color: AppColors.border),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: AppBorderRadius.small,
-                        borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
+                        borderSide: BorderSide(color: AppColors.border),
                       ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
@@ -228,9 +228,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
     super.build(context);
     final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 16.0;
 
-    return Container(
-      color: const Color(0xFF0B0F19),
-      child: Stack(
+    return Stack(
         children: [
         FutureBuilder<List<List<Map<String, dynamic>>>>(
           future: _offersFuture,
@@ -259,13 +257,13 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     securedCount: secured.length,
                   ),
                   SizedBox(height: AppSpacing.xl),
-                  Text("PENDING OFFERS (${pending.length})", style: AppTypography.sectionHeader.copyWith(color: const Color(0xFF94A3B8), fontWeight: FontWeight.w700, letterSpacing: 1.1)),
+                  Text("PENDING OFFERS (${pending.length})", style: AppTypography.sectionHeader.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w700, letterSpacing: 1.1)),
                   SizedBox(height: AppSpacing.md),
                   if (pending.isEmpty)
                     Container(
                       padding: EdgeInsets.all(AppSpacing.xl),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF131B2E),
+                        color: AppColors.surface,
                         borderRadius: AppBorderRadius.small,
                         border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
                       ),
@@ -303,13 +301,13 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                       );
                     }),
                   SizedBox(height: AppSpacing.xxl),
-                  Text("RECENTLY HIRED (${secured.length})", style: AppTypography.sectionHeader.copyWith(color: const Color(0xFF94A3B8), fontWeight: FontWeight.w700, letterSpacing: 1.1)),
+                  Text("RECENTLY HIRED (${secured.length})", style: AppTypography.sectionHeader.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w700, letterSpacing: 1.1)),
                   SizedBox(height: AppSpacing.md),
                   if (secured.isEmpty)
                     Container(
                       padding: EdgeInsets.all(AppSpacing.lg),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF131B2E),
+                        color: AppColors.surface,
                         borderRadius: AppBorderRadius.small,
                         border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
                       ),
@@ -346,7 +344,6 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
           ),
         ),
       ],
-    ),
-  );
+    );
   }
 }

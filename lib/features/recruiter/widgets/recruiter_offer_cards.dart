@@ -15,19 +15,22 @@ class RecruiterOfferHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = pendingCount + securedCount;
     final rate = total == 0 ? 0 : ((securedCount / total) * 100).round();
+    final isDark = ThemeController.instance.isDarkMode;
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF064E3B), Color(0xFF0F766E)],
+        gradient: LinearGradient(
+          colors: isDark
+              ? const [Color(0xFF064E3B), Color(0xFF0F766E)]
+              : const [Color(0xFF059669), Color(0xFF10B981)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: AppBorderRadius.large,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withValues(alpha: 0.25),
+            color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.25 : 0.15),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -43,7 +46,7 @@ class RecruiterOfferHeader extends StatelessWidget {
                 Text(
                   "OFFER CONVERSION: $rate%",
                   style: AppTypography.sectionHeader.copyWith(
-                    color: const Color(0xFF6EE7B7),
+                    color: isDark ? const Color(0xFF6EE7B7) : Colors.white,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -60,7 +63,7 @@ class RecruiterOfferHeader extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   "$pendingCount pending candidate decisions",
-                  style: AppTypography.caption.copyWith(color: Colors.white70),
+                  style: AppTypography.caption.copyWith(color: Colors.white.withValues(alpha: 0.85)),
                 ),
               ],
             ),
@@ -68,11 +71,11 @@ class RecruiterOfferHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: Colors.white.withValues(alpha: 0.15),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
             ),
-            child: const Icon(Icons.verified_user_rounded, color: Color(0xFF6EE7B7), size: 34),
+            child: const Icon(Icons.verified_user_rounded, color: Colors.white, size: 34),
           ),
         ],
       ),
@@ -104,25 +107,28 @@ class RecruiterPendingOfferCard extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF131B2E),
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.border.withValues(alpha: 0.6)),
+          side: BorderSide(color: AppColors.border),
         ),
-        title: const Text("Revoke Job Offer?", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          "Revoke Job Offer?",
+          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        ),
         content: Text(
           "Are you sure you want to revoke the offer extended to $name? They will be moved back to Shortlisted.",
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Keep Offer", style: TextStyle(color: Colors.white60)),
+            child: Text("Keep Offer", style: TextStyle(color: AppColors.textMuted)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
+              backgroundColor: AppColors.danger,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
@@ -140,25 +146,28 @@ class RecruiterPendingOfferCard extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF131B2E),
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.border.withValues(alpha: 0.6)),
+          side: BorderSide(color: AppColors.border),
         ),
-        title: const Text("Confirm Candidate Hiring", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          "Confirm Candidate Hiring",
+          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        ),
         content: Text(
           "Mark $name as officially Hired for $role?",
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.white60)),
+            child: Text("Cancel", style: TextStyle(color: AppColors.textMuted)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: AppColors.success,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
@@ -174,16 +183,23 @@ class RecruiterPendingOfferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = ThemeController.instance.isDarkMode;
+    final warningColor = AppColors.warning;
+
     return Container(
       margin: EdgeInsets.only(bottom: AppSpacing.md),
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: const Color(0xFF131B2E),
+        color: AppColors.surface,
         borderRadius: AppBorderRadius.medium,
-        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.35)),
+        border: Border.all(
+          color: isDark ? warningColor.withValues(alpha: 0.35) : AppColors.border,
+        ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF59E0B).withValues(alpha: 0.05),
+            color: isDark
+                ? warningColor.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -197,10 +213,10 @@ class RecruiterPendingOfferCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                  color: warningColor.withValues(alpha: 0.14),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.hourglass_bottom_rounded, color: Color(0xFFFBBF24), size: 18),
+                child: Icon(Icons.hourglass_bottom_rounded, color: warningColor, size: 18),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -210,7 +226,7 @@ class RecruiterPendingOfferCard extends StatelessWidget {
                     Text(
                       name,
                       style: AppTypography.bodyMediumBold.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -218,7 +234,7 @@ class RecruiterPendingOfferCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       role + (date != null ? " • Sent $date" : ""),
-                      style: AppTypography.caption.copyWith(color: Colors.white60),
+                      style: AppTypography.caption.copyWith(color: AppColors.textMuted),
                     ),
                   ],
                 ),
@@ -226,14 +242,14 @@ class RecruiterPendingOfferCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                  color: warningColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
+                  border: Border.all(color: warningColor.withValues(alpha: 0.3)),
                 ),
-                child: const Text(
+                child: Text(
                   "OFFER SENT",
                   style: TextStyle(
-                    color: Color(0xFFFBBF24),
+                    color: warningColor,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.6,
@@ -247,18 +263,19 @@ class RecruiterPendingOfferCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
+                color: isDark ? const Color(0xFF1E293B) : AppColors.surfaceAlt,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.payments_outlined, size: 15, color: Color(0xFF38BDF8)),
+                  Icon(Icons.payments_outlined, size: 15, color: AppColors.info),
                   const SizedBox(width: 6),
                   Text(
                     compensation!,
-                    style: const TextStyle(
-                      color: Color(0xFF38BDF8),
+                    style: TextStyle(
+                      color: AppColors.info,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -271,14 +288,16 @@ class RecruiterPendingOfferCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              OutlinedButton(
+              TextButton(
                 onPressed: isLoading ? null : () => _confirmRevoke(context),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFF87171),
-                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                  side: const BorderSide(color: Color(0xFFEF4444), width: 1.0),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  backgroundColor: AppColors.danger.withValues(alpha: 0.1),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: AppColors.danger.withValues(alpha: 0.5), width: 1.0),
+                  ),
                 ),
                 child: const Text(
                   "Revoke",
@@ -286,28 +305,28 @@ class RecruiterPendingOfferCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: isLoading ? null : () => _confirmMarkHired(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              SizedBox(
+                height: 36,
+                child: FilledButton.icon(
+                  onPressed: isLoading ? null : () => _confirmMarkHired(context),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.success,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  icon: isLoading
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.check, size: 16, color: Colors.white),
+                  label: const Text(
+                    "Mark Hired",
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
                 ),
-                child: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.check, size: 16, color: Colors.white),
-                          SizedBox(width: 6),
-                          Text("Mark Hired", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                        ],
-                      ),
               ),
             ],
           ),
@@ -335,15 +354,15 @@ class RecruiterSecuredOfferTile extends StatelessWidget {
       margin: EdgeInsets.only(bottom: AppSpacing.sm),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFF131B2E),
+        color: AppColors.surface,
         borderRadius: AppBorderRadius.small,
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.15),
-            child: const Icon(Icons.check_circle_rounded, color: Color(0xFF34D399), size: 20),
+            backgroundColor: AppColors.success.withValues(alpha: 0.12),
+            child: Icon(Icons.check_circle_rounded, color: AppColors.success, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -353,13 +372,13 @@ class RecruiterSecuredOfferTile extends StatelessWidget {
                 Text(
                   name,
                   style: AppTypography.bodyMediumBold.copyWith(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   role + (date != null ? " • Hired $date" : ""),
-                  style: AppTypography.caption.copyWith(color: Colors.white60),
+                  style: AppTypography.caption.copyWith(color: AppColors.textMuted),
                 ),
               ],
             ),
@@ -367,14 +386,14 @@ class RecruiterSecuredOfferTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+              color: AppColors.success.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+              border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
             ),
-            child: const Text(
+            child: Text(
               "HIRED",
               style: TextStyle(
-                color: Color(0xFF34D399),
+                color: AppColors.success,
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.6,
