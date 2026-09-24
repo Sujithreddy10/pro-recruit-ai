@@ -62,14 +62,14 @@ class RecruiterPipelineStageCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: const Color(0xFF131B2E),
         borderRadius: AppBorderRadius.medium,
-        border: Border.all(color: AppColors.border, width: 0.8),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.6), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: accentColor.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           )
         ],
       ),
@@ -98,7 +98,7 @@ class RecruiterPipelineStageCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(title, style: AppTypography.bodyMediumBold),
+                        Text(title, style: AppTypography.bodyMediumBold.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
                       ],
                     ),
                     Row(
@@ -108,7 +108,7 @@ class RecruiterPipelineStageCard extends StatelessWidget {
                           style: AppTypography.bodySmallBold.copyWith(color: accentColor),
                         ),
                         const SizedBox(width: 4),
-                        Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textMuted),
+                        Icon(Icons.chevron_right_rounded, size: 20, color: Colors.white54),
                       ],
                     ),
                   ],
