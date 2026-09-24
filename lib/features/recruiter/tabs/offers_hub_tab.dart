@@ -103,6 +103,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
     }
 
     int? selectedAppId = candidates.first['id'];
+    final ctcController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
@@ -156,6 +157,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<int>(
                         dropdownColor: AppColors.surface,
+                        menuMaxHeight: 260,
                         value: selectedAppId,
                         isExpanded: true,
                         items: candidates.map((c) {
@@ -178,6 +180,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                   Text("Offered Compensation / CTC", style: AppTypography.captionBold.copyWith(color: AppColors.textSecondary)),
                   SizedBox(height: AppSpacing.xs),
                   TextField(
+                    controller: ctcController,
                     style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: r"e.g. ₹18,00,000 / annum or $120k",
@@ -203,7 +206,11 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                       onPressed: () {
                         if (selectedAppId != null) {
                           Navigator.pop(ctx);
-                          _updateStatus(selectedAppId!, 'offer_sent', "Offer extended successfully!");
+                          _updateStatus(
+                            selectedAppId!,
+                            'offer_sent',
+                            "Offer extended successfully!",
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -257,7 +264,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     securedCount: secured.length,
                   ),
                   SizedBox(height: AppSpacing.xl),
-                  Text("PENDING OFFERS (${pending.length})", style: AppTypography.sectionHeader.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w700, letterSpacing: 1.1)),
+                  Text("PENDING OFFERS (${pending.length})", style: AppTypography.sectionHeader.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w700, letterSpacing: 1.1)),
                   SizedBox(height: AppSpacing.md),
                   if (pending.isEmpty)
                     Container(
@@ -301,7 +308,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                       );
                     }),
                   SizedBox(height: AppSpacing.xxl),
-                  Text("RECENTLY HIRED (${secured.length})", style: AppTypography.sectionHeader.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w700, letterSpacing: 1.1)),
+                  Text("RECENTLY HIRED (${secured.length})", style: AppTypography.sectionHeader.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w700, letterSpacing: 1.1)),
                   SizedBox(height: AppSpacing.md),
                   if (secured.isEmpty)
                     Container(
