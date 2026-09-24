@@ -146,15 +146,15 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
     return Scaffold(
       key: _scafKey,
       drawer: _buildMasterDrawer(),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: const [NotificationBell()],
         leading: IconButton(
           icon: Icon(Icons.menu, color: AppColors.primary),
           onPressed: () => _scafKey.currentState!.openDrawer(),
         ),
-        title: null,
-        backgroundColor: AppColors.surface.withValues(alpha: 0.9),
-        elevation: 0,
       ),
       body: AnimatedBackgroundWrapper(
         child: IndexedStack(

@@ -214,6 +214,121 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
     );
   }
 
+  void _showNotificationPreferencesSheet() {
+    bool newCandidateAlert = true;
+    bool interviewAlert = true;
+    bool offerAlert = true;
+    bool dailyDigest = false;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Material(
+              color: AppColors.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  MediaQuery.of(context).padding.bottom + AppSpacing.xl,
+                ),
+                child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  Text(
+                    "Notification Preferences",
+                    style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    "Configure real-time alerts for candidate milestones",
+                    style: AppTypography.caption.copyWith(color: AppColors.textMuted),
+                  ),
+                  SizedBox(height: AppSpacing.lg),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    activeTrackColor: AppColors.primary,
+                    title: Text("New Applications", style: AppTypography.bodyMediumBold),
+                    subtitle: Text("Notify when candidates match active jobs", style: AppTypography.caption),
+                    value: newCandidateAlert,
+                    onChanged: (val) => setSheetState(() => newCandidateAlert = val),
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    activeTrackColor: AppColors.primary,
+                    title: Text("Interview Confirmations", style: AppTypography.bodyMediumBold),
+                    subtitle: Text("Alerts when candidates accept or reschedule slots", style: AppTypography.caption),
+                    value: interviewAlert,
+                    onChanged: (val) => setSheetState(() => interviewAlert = val),
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    activeTrackColor: AppColors.primary,
+                    title: Text("Offer Updates", style: AppTypography.bodyMediumBold),
+                    subtitle: Text("Immediate push notification when offers are signed", style: AppTypography.caption),
+                    value: offerAlert,
+                    onChanged: (val) => setSheetState(() => offerAlert = val),
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    activeTrackColor: AppColors.primary,
+                    title: Text("Daily Summary Digest", style: AppTypography.bodyMediumBold),
+                    subtitle: Text("Receive a 9 AM rollup email of pipeline movement", style: AppTypography.caption),
+                    value: dailyDigest,
+                    onChanged: (val) => setSheetState(() => dailyDigest = val),
+                  ),
+                  SizedBox(height: AppSpacing.xl),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text("Preferences saved successfully!"),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text("Save Preferences", style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
+    )
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _confirmSignOut() {
     showDialog(
       context: context,
@@ -336,11 +451,7 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
                       title: const Text("Push & Email Alerts"),
                       subtitle: const Text("Manage candidate and offer alerts"),
                       trailing: const Icon(Icons.chevron_right, size: 20),
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Alert preferences are up to date.")),
-                        );
-                      },
+                      onTap: _showNotificationPreferencesSheet,
                     ),
                     const Divider(height: 1, color: Colors.white10),
                     ListTile(

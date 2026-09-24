@@ -212,7 +212,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 8.0;
+    final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 16.0;
 
     return Stack(
       children: [
