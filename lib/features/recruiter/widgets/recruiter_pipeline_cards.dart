@@ -109,20 +109,32 @@ class RecruiterPipelineStageCard extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: accentColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: accentColor.withValues(alpha: 0.3)),
-                          ),
-                          child: Text(
-                            count,
-                            style: AppTypography.bodySmallBold.copyWith(
-                              color: accentColor,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                        Builder(
+                          builder: (context) {
+                            Color badgeTextColor = accentColor;
+                            if (accentColor == AppColors.info) {
+                              badgeTextColor = const Color(0xFF38BDF8);
+                            } else if (accentColor == AppColors.error) {
+                              badgeTextColor = const Color(0xFFF87171);
+                            } else if (accentColor == AppColors.success) {
+                              badgeTextColor = const Color(0xFF4ADE80);
+                            }
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: badgeTextColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: badgeTextColor.withValues(alpha: 0.4)),
+                              ),
+                              child: Text(
+                                count,
+                                style: AppTypography.bodySmallBold.copyWith(
+                                  color: badgeTextColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(width: 6),
                         const Icon(Icons.chevron_right_rounded, size: 18, color: Colors.white54),
