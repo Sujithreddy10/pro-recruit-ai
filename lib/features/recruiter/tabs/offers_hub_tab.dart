@@ -119,8 +119,9 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                 MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
               ),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: const Color(0xFF131B2E),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -137,22 +138,24 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     ),
                   ),
                   SizedBox(height: AppSpacing.md),
-                  Text("Extend Job Offer", style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w700)),
+                  Text("Extend Job Offer", style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
                   Text(
                     "Select a shortlisted candidate to send an official offer",
                     style: AppTypography.caption.copyWith(color: AppColors.textMuted),
                   ),
                   SizedBox(height: AppSpacing.lg),
-                  Text("Select Candidate", style: AppTypography.captionBold),
+                  Text("Select Candidate", style: AppTypography.captionBold.copyWith(color: Colors.white70)),
                   SizedBox(height: AppSpacing.xs),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.border),
+                      color: const Color(0xFF1E293B),
+                      border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
                       borderRadius: AppBorderRadius.small,
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<int>(
+                        dropdownColor: const Color(0xFF1E293B),
                         value: selectedAppId,
                         isExpanded: true,
                         items: candidates.map((c) {
@@ -172,12 +175,23 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     ),
                   ),
                   SizedBox(height: AppSpacing.md),
-                  Text("Offered Compensation / CTC", style: AppTypography.captionBold),
+                  Text("Offered Compensation / CTC", style: AppTypography.captionBold.copyWith(color: Colors.white70)),
                   SizedBox(height: AppSpacing.xs),
                   TextField(
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: r"e.g. ₹18,00,000 / annum or $120k",
-                      border: OutlineInputBorder(borderRadius: AppBorderRadius.small),
+                      hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      border: OutlineInputBorder(
+                        borderRadius: AppBorderRadius.small,
+                        borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: AppBorderRadius.small,
+                        borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
                   ),
@@ -249,9 +263,9 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     Container(
                       padding: EdgeInsets.all(AppSpacing.xl),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: const Color(0xFF131B2E),
                         borderRadius: AppBorderRadius.small,
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
                       ),
                       child: Center(
                         child: Column(
@@ -293,9 +307,9 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     Container(
                       padding: EdgeInsets.all(AppSpacing.lg),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: const Color(0xFF131B2E),
                         borderRadius: AppBorderRadius.small,
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
                       ),
                       child: Center(
                         child: Text(

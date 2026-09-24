@@ -20,15 +20,15 @@ class RecruiterOfferHeader extends StatelessWidget {
       padding: EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF064E3B), Color(0xFF059669)],
+          colors: [Color(0xFF064E3B), Color(0xFF0F766E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: AppBorderRadius.large,
         boxShadow: [
           BoxShadow(
-            color: AppColors.success.withValues(alpha: 0.3),
-            blurRadius: 15,
+            color: const Color(0xFF10B981).withValues(alpha: 0.25),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -42,17 +42,22 @@ class RecruiterOfferHeader extends StatelessWidget {
               children: [
                 Text(
                   "OFFER CONVERSION: $rate%",
-                  style: AppTypography.sectionHeader.copyWith(color: Colors.greenAccent),
+                  style: AppTypography.sectionHeader.copyWith(
+                    color: const Color(0xFF6EE7B7),
+                    letterSpacing: 1.2,
+                  ),
                 ),
                 SizedBox(height: AppSpacing.xs),
                 Text(
                   "$securedCount Hired",
                   style: AppTypography.headlineLarge.copyWith(
-                    color: AppColors.textLight,
-                    fontSize: 18,
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 2),
                 Text(
                   "$pendingCount pending candidate decisions",
                   style: AppTypography.caption.copyWith(color: Colors.white70),
@@ -63,10 +68,11 @@ class RecruiterOfferHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withValues(alpha: 0.12),
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
-            child: const Icon(Icons.verified_user_rounded, color: Colors.white, size: 36),
+            child: const Icon(Icons.verified_user_rounded, color: Color(0xFF6EE7B7), size: 34),
           ),
         ],
       ),
@@ -78,6 +84,7 @@ class RecruiterPendingOfferCard extends StatelessWidget {
   final String name;
   final String role;
   final String? date;
+  final String? compensation;
   final bool isLoading;
   final VoidCallback onMarkAccepted;
   final VoidCallback onCancelOffer;
@@ -87,6 +94,7 @@ class RecruiterPendingOfferCard extends StatelessWidget {
     required this.name,
     required this.role,
     this.date,
+    this.compensation,
     this.isLoading = false,
     required this.onMarkAccepted,
     required this.onCancelOffer,
@@ -96,17 +104,29 @@ class RecruiterPendingOfferCard extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Revoke Job Offer?"),
-        content: Text("Are you sure you want to revoke the offer extended to $name? They will be moved back to Shortlisted."),
+        backgroundColor: const Color(0xFF131B2E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: AppColors.border.withValues(alpha: 0.6)),
+        ),
+        title: const Text("Revoke Job Offer?", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          "Are you sure you want to revoke the offer extended to $name? They will be moved back to Shortlisted.",
+          style: const TextStyle(color: Colors.white70),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Keep Offer"),
+            child: const Text("Keep Offer", style: TextStyle(color: Colors.white60)),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text("Revoke Offer"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text("Revoke"),
           ),
         ],
       ),
@@ -120,16 +140,28 @@ class RecruiterPendingOfferCard extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Confirm Candidate Hiring"),
-        content: Text("Mark $name as officially Hired for $role?"),
+        backgroundColor: const Color(0xFF131B2E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: AppColors.border.withValues(alpha: 0.6)),
+        ),
+        title: const Text("Confirm Candidate Hiring", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          "Mark $name as officially Hired for $role?",
+          style: const TextStyle(color: Colors.white70),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel"),
+            child: const Text("Cancel", style: TextStyle(color: Colors.white60)),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.success),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
             child: const Text("Confirm Hire"),
           ),
         ],
@@ -146,12 +178,12 @@ class RecruiterPendingOfferCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: AppSpacing.md),
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: const Color(0xFF131B2E),
         borderRadius: AppBorderRadius.medium,
-        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.35)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.warning.withValues(alpha: 0.08),
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -163,95 +195,119 @@ class RecruiterPendingOfferCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(AppSpacing.sm),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.14),
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.hourglass_bottom_rounded, color: AppColors.warning, size: 18),
+                child: const Icon(Icons.hourglass_bottom_rounded, color: Color(0xFFFBBF24), size: 18),
               ),
-              SizedBox(width: AppSpacing.md),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(name, style: AppTypography.bodyMediumBold, overflow: TextOverflow.ellipsis),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: AppTypography.bodyMediumBold.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      role + (date != null ? " • Sent $date" : ""),
+                      style: AppTypography.caption.copyWith(color: Colors.white60),
+                    ),
+                  ],
+                ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
                 ),
-                child: Text(
+                child: const Text(
                   "OFFER SENT",
                   style: TextStyle(
-                    color: AppColors.warning,
+                    color: Color(0xFFFBBF24),
                     fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.6,
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: AppSpacing.xs),
-          Padding(
-            padding: const EdgeInsets.only(left: 44),
-            child: Text(
-              role + (date != null ? " • Sent $date" : ""),
-              style: AppTypography.caption.copyWith(color: AppColors.textMuted),
+          if (compensation != null && compensation!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.payments_outlined, size: 15, color: Color(0xFF38BDF8)),
+                  const SizedBox(width: 6),
+                  Text(
+                    compensation!,
+                    style: const TextStyle(
+                      color: Color(0xFF38BDF8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
           SizedBox(height: AppSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              InkWell(
-                onTap: isLoading ? null : () => _confirmRevoke(context),
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Text(
-                    "Revoke",
-                    style: TextStyle(
-                      color: AppColors.error,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
+              OutlinedButton(
+                onPressed: isLoading ? null : () => _confirmRevoke(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFF87171),
+                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                  side: const BorderSide(color: Color(0xFFEF4444), width: 1.0),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                ),
+                child: const Text(
+                  "Revoke",
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                 ),
               ),
-              const SizedBox(width: 8),
-              Material(
-                color: AppColors.success,
-                borderRadius: BorderRadius.circular(8),
-                child: InkWell(
-                  onTap: isLoading ? null : () => _confirmMarkHired(context),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: isLoading
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.check, size: 16, color: Colors.white),
-                              SizedBox(width: 6),
-                              Text(
-                                "Mark Hired",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: isLoading ? null : () => _confirmMarkHired(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check, size: 16, color: Colors.white),
+                          SizedBox(width: 6),
+                          Text("Mark Hired", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                        ],
+                      ),
               ),
             ],
           ),
@@ -279,38 +335,49 @@ class RecruiterSecuredOfferTile extends StatelessWidget {
       margin: EdgeInsets.only(bottom: AppSpacing.sm),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: const Color(0xFF131B2E),
         borderRadius: AppBorderRadius.small,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: AppColors.success.withValues(alpha: 0.12),
-            child: Icon(Icons.check_circle_rounded, color: AppColors.success, size: 20),
+            backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.15),
+            child: const Icon(Icons.check_circle_rounded, color: Color(0xFF34D399), size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: AppTypography.bodyMediumBold),
-                Text(role, style: AppTypography.caption),
+                Text(
+                  name,
+                  style: AppTypography.bodyMediumBold.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  role + (date != null ? " • Hired $date" : ""),
+                  style: AppTypography.caption.copyWith(color: Colors.white60),
+                ),
               ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
             ),
-            child: Text(
+            child: const Text(
               "HIRED",
               style: TextStyle(
-                color: AppColors.success,
+                color: Color(0xFF34D399),
                 fontSize: 10,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.6,
               ),
             ),
           ),
