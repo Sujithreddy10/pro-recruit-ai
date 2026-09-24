@@ -156,16 +156,22 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<int>(
-                        dropdownColor: AppColors.surface,
-                        menuMaxHeight: 260,
                         value: selectedAppId,
                         isExpanded: true,
+                        dropdownColor: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        menuMaxHeight: 220,
+                        icon: Icon(Icons.arrow_drop_down, color: AppColors.textMuted),
                         items: candidates.map((c) {
                           final name = c['profiles']?['full_name'] ?? "Candidate #${c['id']}";
                           final role = c['job_title'] ?? "Role";
                           return DropdownMenuItem<int>(
                             value: c['id'],
-                            child: Text("$name ($role)", overflow: TextOverflow.ellipsis),
+                            child: Text(
+                              "$name ($role)",
+                              style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           );
                         }).toList(),
                         onChanged: (val) {
