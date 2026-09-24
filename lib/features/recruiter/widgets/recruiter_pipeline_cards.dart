@@ -98,17 +98,34 @@ class RecruiterPipelineStageCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(title, style: AppTypography.bodyMediumBold.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+                        Text(
+                          title,
+                          style: AppTypography.bodyMediumBold.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                     Row(
                       children: [
-                        Text(
-                          count,
-                          style: AppTypography.bodySmallBold.copyWith(color: accentColor),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+                          ),
+                          child: Text(
+                            count,
+                            style: AppTypography.bodySmallBold.copyWith(
+                              color: accentColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.chevron_right_rounded, size: 20, color: Colors.white54),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.chevron_right_rounded, size: 18, color: Colors.white54),
                       ],
                     ),
                   ],
