@@ -90,6 +90,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
   }
 
   void _showCandidateDetailSheet(Map<String, dynamic> item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final name = item['profiles']?['full_name'] ?? 'Candidate #${item['id']}';
     final job = item['job_title'] ?? 'Role not specified';
     final status = (item['status'] ?? 'applied').toString();
@@ -103,7 +104,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return Material(
-          color: AppColors.surface,
+          color: isDark ? AppColors.surface : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           clipBehavior: Clip.antiAlias,
           child: Padding(
@@ -122,7 +123,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.border,
+                      color: isDark ? AppColors.border : Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -147,7 +148,13 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name, style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w700)),
+                          Text(
+                            name,
+                            style: AppTypography.titleMedium.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? AppColors.textLight : AppColors.textDark,
+                            ),
+                          ),
                           Text(job, style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
                           const SizedBox(height: 4),
                           Row(
@@ -177,7 +184,12 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                   ],
                 ),
                 SizedBox(height: AppSpacing.lg),
-                Text("DOCUMENT & RESUME", style: AppTypography.sectionHeader),
+                Text(
+                  "DOCUMENT & RESUME",
+                  style: AppTypography.sectionHeader.copyWith(
+                    color: isDark ? AppColors.textLight : AppColors.textDark,
+                  ),
+                ),
                 SizedBox(height: AppSpacing.xs),
                 InkWell(
                   onTap: () => _viewResume(resumePath),
@@ -185,7 +197,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                   child: Container(
                     padding: EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.03),
+                      color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey.shade50,
                       borderRadius: AppBorderRadius.small,
                       border: Border.all(color: AppColors.border),
                     ),
@@ -203,7 +215,9 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                             children: [
                               Text(
                                 resumePath != null ? "Official Candidate Resume.pdf" : "No resume uploaded",
-                                style: AppTypography.bodyMediumBold,
+                                style: AppTypography.bodyMediumBold.copyWith(
+                                  color: isDark ? AppColors.textLight : AppColors.textDark,
+                                ),
                               ),
                               Text(
                                 resumePath != null ? "Tap to open and preview document" : "Applicant did not attach PDF",
@@ -213,13 +227,22 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                           ),
                         ),
                         if (resumePath != null)
-                          const Icon(Icons.open_in_new, size: 18, color: Colors.white60),
+                          Icon(
+                            Icons.open_in_new,
+                            size: 18,
+                            color: isDark ? Colors.white60 : AppColors.textMuted,
+                          ),
                       ],
                     ),
                   ),
                 ),
                 SizedBox(height: AppSpacing.lg),
-                Text("PIPELINE ACTIONS", style: AppTypography.sectionHeader),
+                Text(
+                  "PIPELINE ACTIONS",
+                  style: AppTypography.sectionHeader.copyWith(
+                    color: isDark ? AppColors.textLight : AppColors.textDark,
+                  ),
+                ),
                 SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
@@ -288,6 +311,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
   }
 
   void _showStageCandidates(String stageName, String statusKey, List<Map<String, dynamic>> candidates) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final filtered = candidates.where((c) => (c['status'] ?? 'applied') == statusKey).toList();
 
     showModalBottomSheet(
@@ -296,7 +320,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return Material(
-          color: AppColors.surface,
+          color: isDark ? AppColors.surface : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           clipBehavior: Clip.antiAlias,
           child: SizedBox(
@@ -308,7 +332,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.border,
+                    color: isDark ? AppColors.border : Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -320,7 +344,13 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(stageName, style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w700)),
+                          Text(
+                            stageName,
+                            style: AppTypography.titleMedium.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? AppColors.textLight : AppColors.textDark,
+                            ),
+                          ),
                           Text(
                             "${filtered.length} candidates in this stage",
                             style: AppTypography.caption.copyWith(color: AppColors.textMuted),
@@ -354,17 +384,19 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                             final date = (item['created_at'] ?? '').toString().split('T').first;
 
                             return Material(
-                              color: AppColors.surface,
+                              color: isDark ? AppColors.surface : Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: AppBorderRadius.small,
-                                side: BorderSide(color: AppColors.border),
+                                side: BorderSide(
+                                  color: isDark ? AppColors.border : AppColors.border.withValues(alpha: 0.7),
+                                ),
                               ),
                               clipBehavior: Clip.antiAlias,
                               child: InkWell(
                                 onTap: () {
-                                Navigator.pop(ctx);
-                                _showCandidateDetailSheet(item);
-                              },
+                                  Navigator.pop(ctx);
+                                  _showCandidateDetailSheet(item);
+                                },
                                 child: Padding(
                                   padding: EdgeInsets.all(AppSpacing.md),
                                   child: Row(
@@ -384,7 +416,12 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(name, style: AppTypography.bodyMediumBold),
+                                            Text(
+                                              name,
+                                              style: AppTypography.bodyMediumBold.copyWith(
+                                                color: isDark ? AppColors.textLight : AppColors.textDark,
+                                              ),
+                                            ),
                                             Text(job, style: AppTypography.caption),
                                             if (date.isNotEmpty)
                                               Text(
@@ -445,13 +482,24 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(bool isDark) {
     return Container(
       height: 46,
       decoration: BoxDecoration(
-        color: const Color(0xFF131B2E),
+        color: isDark ? const Color(0xFF131B2E) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
+        border: Border.all(
+          color: isDark ? AppColors.border.withValues(alpha: 0.6) : AppColors.border.withValues(alpha: 0.7),
+        ),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: TextField(
         controller: _searchController,
@@ -460,14 +508,28 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
             _searchQuery = val.trim().toLowerCase();
           });
         },
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: TextStyle(
+          color: isDark ? Colors.white : AppColors.textDark,
+          fontSize: 14,
+        ),
         decoration: InputDecoration(
           hintText: "Search candidate name or title...",
-          hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
-          prefixIcon: Icon(Icons.search, size: 20, color: AppColors.textMuted),
+          hintStyle: TextStyle(
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            fontSize: 13,
+          ),
+          prefixIcon: Icon(
+            Icons.search,
+            size: 20,
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+          ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, size: 18, color: Colors.white70),
+                  icon: Icon(
+                    Icons.clear,
+                    size: 18,
+                    color: isDark ? Colors.white70 : Colors.black54,
+                  ),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
@@ -567,6 +629,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 8.0;
 
     return FutureBuilder<List<Map<String, dynamic>>>(
@@ -591,7 +654,13 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
           return name.contains(_searchQuery) || job.contains(_searchQuery);
         }).toList();
 
-        final counts = <String, int>{'applied': 0, 'shortlisted': 0, 'rejected': 0};
+        final counts = <String, int>{
+          'applied': 0,
+          'shortlisted': 0,
+          'offer_sent': 0,
+          'hired': 0,
+          'rejected': 0,
+        };
         for (final row in visibleApps) {
           final status = (row['status'] as String? ?? 'applied').toLowerCase();
           counts[status] = (counts[status] ?? 0) + 1;
@@ -611,7 +680,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
               AppSpacing.lg,
               topInset,
               AppSpacing.lg,
-              AppSpacing.lg,
+              100.0,
             ),
             children: [
               RecruiterPipelineHeader(
@@ -621,7 +690,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                     : "Status funnel for $_selectedRole",
               ),
               SizedBox(height: AppSpacing.md),
-              _buildSearchBar(),
+              _buildSearchBar(isDark),
               SizedBox(height: AppSpacing.md),
               _buildRolePills(allApps),
               SizedBox(height: AppSpacing.lg),
@@ -635,9 +704,23 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
               RecruiterPipelineStageCard(
                 title: "Shortlisted",
                 count: "${counts['shortlisted']} Candidates",
-                accentColor: AppColors.success,
+                accentColor: const Color(0xFF818CF8),
                 progress: ratio(counts['shortlisted']!),
                 onTap: () => _showStageCandidates("Shortlisted Candidates", "shortlisted", visibleApps),
+              ),
+              RecruiterPipelineStageCard(
+                title: "Offers Extended",
+                count: "${counts['offer_sent']} Candidates",
+                accentColor: Colors.amber.shade700,
+                progress: ratio(counts['offer_sent']!),
+                onTap: () => _showStageCandidates("Offers Extended", "offer_sent", visibleApps),
+              ),
+              RecruiterPipelineStageCard(
+                title: "Hired Candidates",
+                count: "${counts['hired']} Hired",
+                accentColor: AppColors.success,
+                progress: ratio(counts['hired']!),
+                onTap: () => _showStageCandidates("Hired Candidates", "hired", visibleApps),
               ),
               RecruiterPipelineStageCard(
                 title: "Rejected / Archived",

@@ -13,27 +13,66 @@ class RecruiterPipelineHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: EdgeInsets.all(AppSpacing.xl),
-      decoration: AppDecorations.primaryCard,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF131B2E) : Colors.white,
+        borderRadius: AppBorderRadius.large,
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.6),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "LIVE PIPELINE",
-            style: AppTypography.sectionHeader.copyWith(color: Colors.cyanAccent),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF38BDF8).withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF38BDF8).withValues(alpha: 0.3) : AppColors.primary.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Text(
+                  "LIVE PIPELINE",
+                  style: AppTypography.caption.copyWith(
+                    color: isDark ? const Color(0xFF38BDF8) : AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: AppSpacing.xs),
+          SizedBox(height: AppSpacing.sm),
           Text(
             "Total Applications: $total",
             style: AppTypography.headlineLarge.copyWith(
-              color: AppColors.textLight,
-              fontSize: 18,
+              color: isDark ? Colors.white : AppColors.textDark,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             subtitle,
-            style: AppTypography.caption.copyWith(color: Colors.white60),
+            style: AppTypography.caption.copyWith(
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+              fontSize: 12,
+            ),
           ),
         ],
       ),
@@ -59,18 +98,23 @@ class RecruiterPipelineStageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFF131B2E),
+        color: isDark ? const Color(0xFF131B2E) : Colors.white,
         borderRadius: AppBorderRadius.medium,
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.6), width: 1.0),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.7),
+          width: 1.0,
+        ),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withValues(alpha: 0.06),
-            blurRadius: 10,
+            color: accentColor.withValues(alpha: isDark ? 0.08 : 0.08),
+            blurRadius: 12,
             offset: const Offset(0, 3),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -95,13 +139,21 @@ class RecruiterPipelineStageCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: accentColor,
                             shape: BoxShape.circle,
+                            boxShadow: isDark
+                                ? [
+                                    BoxShadow(
+                                      color: accentColor.withValues(alpha: 0.5),
+                                      blurRadius: 6,
+                                    ),
+                                  ]
+                                : [],
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Text(
                           title,
                           style: AppTypography.bodyMediumBold.copyWith(
-                            color: Colors.white,
+                            color: isDark ? const Color(0xFFF1F5F9) : AppColors.textDark,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -109,35 +161,27 @@ class RecruiterPipelineStageCard extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Builder(
-                          builder: (context) {
-                            Color badgeTextColor = accentColor;
-                            if (accentColor == AppColors.info) {
-                              badgeTextColor = const Color(0xFF38BDF8);
-                            } else if (accentColor == AppColors.error) {
-                              badgeTextColor = const Color(0xFFF87171);
-                            } else if (accentColor == AppColors.success) {
-                              badgeTextColor = const Color(0xFF4ADE80);
-                            }
-                            return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: badgeTextColor.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: badgeTextColor.withValues(alpha: 0.4)),
-                              ),
-                              child: Text(
-                                count,
-                                style: AppTypography.bodySmallBold.copyWith(
-                                  color: badgeTextColor,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            );
-                          },
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: isDark ? 0.2 : 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: accentColor.withValues(alpha: 0.5)),
+                          ),
+                          child: Text(
+                            count,
+                            style: AppTypography.bodySmallBold.copyWith(
+                              color: accentColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 6),
-                        const Icon(Icons.chevron_right_rounded, size: 18, color: Colors.white54),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 18,
+                          color: isDark ? const Color(0xFF64748B) : AppColors.textMuted,
+                        ),
                       ],
                     ),
                   ],
@@ -148,7 +192,7 @@ class RecruiterPipelineStageCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progress.clamp(0.0, 1.0),
                     minHeight: 7,
-                    backgroundColor: accentColor.withValues(alpha: 0.12),
+                    backgroundColor: isDark ? const Color(0xFF0F172A) : accentColor.withValues(alpha: 0.14),
                     color: accentColor,
                   ),
                 ),
