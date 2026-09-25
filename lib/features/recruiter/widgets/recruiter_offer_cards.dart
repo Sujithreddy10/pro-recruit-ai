@@ -84,6 +84,36 @@ class RecruiterOfferHeader extends StatelessWidget {
 }
 
 class RecruiterPendingOfferCard extends StatelessWidget {
+
+  String _formatCompensation(String raw) {
+    final clean = raw.trim();
+    if (clean.isEmpty) return raw;
+    if (clean.contains('₹') || clean.contains('\$') || clean.toLowerCase().contains('lpa') || clean.toLowerCase().contains('k')) {
+      return clean;
+    }
+    final numVal = int.tryParse(clean.replaceAll(',', ''));
+    if (numVal != null) {
+      if (numVal >= 100000) {
+        final s = numVal.toString();
+        final lastThree = s.substring(s.length - 3);
+        final otherDigits = s.substring(0, s.length - 3);
+        final buffer = StringBuffer();
+        for (int i = 0; i < otherDigits.length; i++) {
+          final posFromRight = otherDigits.length - i;
+          buffer.write(otherDigits[i]);
+          if (posFromRight > 1 && posFromRight % 2 == 1) {
+            buffer.write(',');
+          }
+        }
+        final formattedOther = buffer.toString();
+        return '₹${formattedOther.isNotEmpty ? "$formattedOther," : ""}$lastThree / yr';
+      } else {
+        return '₹$numVal / yr';
+      }
+    }
+    return clean;
+  }
+
   final String name;
   final String role;
   final String? date;
@@ -274,7 +304,7 @@ class RecruiterPendingOfferCard extends StatelessWidget {
                   Icon(Icons.payments_outlined, size: 15, color: AppColors.info),
                   const SizedBox(width: 6),
                   Text(
-                    compensation!,
+                    _formatCompensation(compensation!),
                     style: TextStyle(
                       color: AppColors.info,
                       fontSize: 12,

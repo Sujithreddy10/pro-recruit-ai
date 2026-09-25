@@ -320,7 +320,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                         onCancelOffer: () => _updateStatus(o['id'], 'shortlisted', "Offer revoked, moved back to Shortlist"),
                       );
                     }),
-                  SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: 90),
                   Text("RECENTLY HIRED (${secured.length})", style: AppTypography.sectionHeader.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w700, letterSpacing: 1.1)),
                   SizedBox(height: AppSpacing.md),
                   if (secured.isEmpty)
