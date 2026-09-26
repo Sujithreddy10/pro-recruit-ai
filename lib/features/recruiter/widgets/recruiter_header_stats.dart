@@ -31,48 +31,76 @@ class _RecruiterHeaderStatsState extends State<RecruiterHeaderStats> {
     };
   }
 
-  Widget _statColumn(String value, String label) => Column(
+  Widget _statColumn(String value, String label, bool isDark) => Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             value,
-            style: AppTypography.headlineLarge.copyWith(color: AppColors.textLight, fontSize: 20),
+            style: AppTypography.headlineLarge.copyWith(
+              color: isDark ? Colors.white : AppColors.textDark,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
           ),
+          const SizedBox(height: 2),
           Text(
             label,
-            style: AppTypography.caption.copyWith(color: Colors.white38),
+            style: AppTypography.caption.copyWith(
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
           ),
         ],
       );
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return FutureBuilder<Map<String, int>>(
       future: _statsFuture,
       builder: (context, snapshot) {
         final stats = snapshot.data ?? {'candidates': 0, 'jobs': 0, 'applications': 0};
         return Container(
-          padding: EdgeInsets.all(AppSpacing.lg),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [AppColors.secondary, Color(0xFF1E293B)]),
+            color: isDark ? const Color(0xFF131B2E) : Colors.white,
             borderRadius: AppBorderRadius.large,
+            border: Border.all(
+              color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.7),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: snapshot.connectionState == ConnectionState.waiting
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
-                    ),
-                  ),
+              ? const SizedBox(
+                  height: 44,
+                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
                 )
               : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _statColumn("${stats['candidates']}", "Pool"),
-                    _statColumn("${stats['jobs']}", "Jobs"),
-                    _statColumn("${stats['applications']}", "Applications"),
+                    _statColumn("${stats['candidates']}", "POOL", isDark),
+                    Container(
+                      height: 26,
+                      width: 1,
+                      color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
+                    ),
+                    _statColumn("${stats['jobs']}", "JOBS", isDark),
+                    Container(
+                      height: 26,
+                      width: 1,
+                      color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
+                    ),
+                    _statColumn("${stats['applications']}", "APPLICATIONS", isDark),
                   ],
                 ),
         );
