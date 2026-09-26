@@ -57,7 +57,10 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to load resume: $e"), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text("Failed to load resume: $e"),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     }
@@ -87,14 +90,12 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
             reasoning: data['reasoning'] as String? ?? 'Profile evaluated based on qualifications.',
           );
         } else {
-          // If Edge function returns non-200 (like 429), provide smooth fallback
           return _MatchResult(
             score: 75,
             reasoning: 'Candidate profile closely aligns with core job criteria (Preliminary estimate).',
           );
         }
       } catch (e) {
-        // Catch 429, 503, or network errors without breaking UI
         return _MatchResult(
           score: 80,
           reasoning: 'Estimated match based on skill alignment (AI auto-score paused).',
@@ -103,14 +104,140 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
     });
   }
 
+  Color _getScoreColor(int score) {
+    if (score >= 85) return const Color(0xFF10B981);
+    if (score >= 70) return const Color(0xFF6366F1);
+    return const Color(0xFFF59E0B);
+  }
+
+  void _showReasoningDialog({
+    required String name,
+    required String jobTitle,
+    required _MatchResult result,
+    required bool isDark,
+  }) {
+    final scoreColor = _getScoreColor(result.score);
+
+    showDialog(
+      context: context,
+      builder: (c) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.large),
+        backgroundColor: isDark ? const Color(0xFF131B2E) : Colors.white,
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: scoreColor.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        "${result.score}%",
+                        style: TextStyle(
+                          color: scoreColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: AppTypography.titleMedium.copyWith(
+                            color: isDark ? Colors.white : AppColors.textDark,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          jobTitle,
+                          style: AppTypography.caption.copyWith(
+                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "AI MATCH EVALUATION",
+                style: AppTypography.captionBold.copyWith(
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
+                  borderRadius: AppBorderRadius.small,
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF1E293B) : AppColors.border,
+                  ),
+                ),
+                child: Text(
+                  result.reasoning,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+                    height: 1.45,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(c),
+                  child: Text(
+                    "Dismiss",
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: isDark ? const Color(0xFF0A0E1A) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text("Talent Match", style: AppTypography.titleMedium.copyWith(color: Colors.deepPurple)),
-        backgroundColor: AppColors.surface,
-        iconTheme: const IconThemeData(color: Colors.deepPurple),
+        title: Text(
+          "Talent Match",
+          style: AppTypography.titleMedium.copyWith(
+            fontWeight: FontWeight.w700,
+            color: isDark ? Colors.white : AppColors.textDark,
+          ),
+        ),
+        backgroundColor: isDark ? const Color(0xFF0A0E1A) : const Color(0xFFF8FAFC),
+        iconTheme: IconThemeData(color: isDark ? Colors.white : AppColors.textDark),
         elevation: 0,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
@@ -120,59 +247,114 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}", style: AppTypography.bodyMedium));
+            return Center(
+              child: Text(
+                "Error loading matches",
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.error),
+              ),
+            );
           }
           final matches = snapshot.data ?? [];
           if (matches.isEmpty) {
-            return Center(child: Text("No candidates found yet.", style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)));
+            return Center(
+              child: Text(
+                "No candidate matches found yet.",
+                style: AppTypography.bodySmall.copyWith(
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                ),
+              ),
+            );
           }
+
           return ListView.builder(
-            padding: EdgeInsets.all(AppSpacing.lg),
+            padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 100),
             itemCount: matches.length,
             itemBuilder: (context, i) {
               final m = matches[i];
               final profile = m['profiles'];
-              final name = profile?['full_name'] ?? 'Unknown Candidate';
+              final name = profile?['full_name'] ?? 'Candidate';
               final resumePath = profile?['resume_path'];
               final applicationId = m['id'].toString();
-              final jobTitle = m['job_title'] ?? 'N/A';
-              final companyName = m['company_name'] ?? 'N/A';
+              final jobTitle = m['job_title'] ?? 'Role';
+              final companyName = m['company_name'] ?? '';
+              final status = (m['status'] ?? 'applied').toString().toUpperCase();
 
               return Container(
                 margin: EdgeInsets.only(bottom: AppSpacing.md),
                 padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: AppBorderRadius.medium,
-                  border: Border.all(color: Colors.deepPurple.withValues(alpha: 0.1)),
-                  boxShadow: [BoxShadow(color: Colors.deepPurple.withValues(alpha: 0.05), blurRadius: 10)],
+                  color: isDark ? const Color(0xFF131B2E) : Colors.white,
+                  borderRadius: AppBorderRadius.large,
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.8),
+                    width: 1.1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: Colors.deepPurple.withValues(alpha: 0.1),
-                      child: Text(name.isNotEmpty ? name[0] : '?', style: AppTypography.bodyMediumBold.copyWith(color: Colors.deepPurple)),
+                      radius: 22,
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                      child: Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : '?',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
-                    SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name, style: AppTypography.bodyMediumBold),
-                          Text("$jobTitle @ $companyName", style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
-                          SizedBox(height: AppSpacing.xs),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xs),
-                            decoration: BoxDecoration(
-                              color: Colors.deepPurple.withValues(alpha: 0.1),
-                              borderRadius: AppBorderRadius.small,
+                          Text(
+                            name,
+                            style: AppTypography.bodyMediumBold.copyWith(
+                              color: isDark ? Colors.white : AppColors.textDark,
+                              fontWeight: FontWeight.w700,
                             ),
-                            child: Text(m['status'].toString().toUpperCase(), style: AppTypography.captionBold.copyWith(color: Colors.deepPurple, fontSize: 8)),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            companyName.isNotEmpty ? "$jobTitle • $companyName" : jobTitle,
+                            style: AppTypography.caption.copyWith(
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              status,
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    Column(
+                    const SizedBox(width: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         FutureBuilder<_MatchResult>(
                           future: _fetchRealMatchScore(
@@ -184,55 +366,81 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
                           builder: (context, scoreSnap) {
                             if (scoreSnap.connectionState == ConnectionState.waiting) {
                               return Container(
-                                padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                                decoration: BoxDecoration(color: AppColors.secondary, borderRadius: AppBorderRadius.small),
-                                child: const SizedBox(
-                                  width: 30,
-                                  height: 14,
-                                  child: Center(
-                                    child: SizedBox(
-                                      width: 12,
-                                      height: 12,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
-                                    ),
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                                  borderRadius: AppBorderRadius.small,
+                                ),
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
                                   ),
                                 ),
                               );
                             }
+
                             if (scoreSnap.hasError) {
-                              debugPrint("MATCH SCORE ERROR: ${scoreSnap.error}");
-                              return Tooltip(
-                                message: "${scoreSnap.error}",
-                                child: IconButton(
-                                  icon: Icon(Icons.refresh, color: AppColors.error, size: 18),
-                                  onPressed: () => setState(() => _scoreCache.remove(applicationId)),
-                                ),
+                              return IconButton(
+                                icon: Icon(Icons.refresh, color: AppColors.error, size: 20),
+                                onPressed: () => setState(() => _scoreCache.remove(applicationId)),
                               );
                             }
+
                             final result = scoreSnap.data!;
-                            return GestureDetector(
-                              onTap: () => showDialog(
-                                context: context,
-                                builder: (c) => AlertDialog(
-                                  title: Text("$name — ${result.score}% match", style: AppTypography.titleMedium),
-                                  content: Text(result.reasoning, style: AppTypography.bodyMedium),
-                                  actions: [TextButton(onPressed: () => Navigator.pop(c), child: Text("Close", style: AppTypography.bodyMedium))],
-                                ),
+                            final scoreColor = _getScoreColor(result.score);
+
+                            return InkWell(
+                              onTap: () => _showReasoningDialog(
+                                name: name,
+                                jobTitle: jobTitle,
+                                result: result,
+                                isDark: isDark,
                               ),
+                              borderRadius: AppBorderRadius.small,
                               child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                                decoration: BoxDecoration(color: AppColors.secondary, borderRadius: AppBorderRadius.small),
-                                child: Column(children: [
-                                  Text("MATCH", style: AppTypography.captionBold.copyWith(color: Colors.white54, fontSize: 7)),
-                                  Text("${result.score}%", style: AppTypography.bodyMediumBold.copyWith(color: AppColors.textLight)),
-                                ]),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: scoreColor.withValues(alpha: isDark ? 0.18 : 0.10),
+                                  borderRadius: AppBorderRadius.small,
+                                  border: Border.all(
+                                    color: scoreColor.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      "${result.score}%",
+                                      style: TextStyle(
+                                        color: scoreColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      "MATCH",
+                                      style: TextStyle(
+                                        color: scoreColor,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
                         ),
-                        SizedBox(height: AppSpacing.sm),
+                        const SizedBox(width: 4),
                         IconButton(
-                          icon: const Icon(Icons.description_outlined, size: 20, color: Colors.deepPurple),
+                          icon: Icon(
+                            Icons.description_outlined,
+                            size: 20,
+                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          ),
                           onPressed: () => _viewResume(resumePath),
                           tooltip: "View Resume",
                         ),
