@@ -15,21 +15,22 @@ class RecruiterOrgProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      padding: EdgeInsets.all(AppSpacing.xl),
+      padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? const Color(0xFF131B2E) : Colors.white,
         borderRadius: AppBorderRadius.large,
-        border: Border.all(color: Colors.white10),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.7),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -54,7 +55,7 @@ class RecruiterOrgProfileCard extends StatelessWidget {
                     companyName.isNotEmpty ? companyName[0].toUpperCase() : "H",
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -70,7 +71,11 @@ class RecruiterOrgProfileCard extends StatelessWidget {
                         Flexible(
                           child: Text(
                             companyName,
-                            style: AppTypography.headlineLarge.copyWith(fontSize: 18),
+                            style: AppTypography.headlineLarge.copyWith(
+                              fontSize: 18,
+                              color: isDark ? Colors.white : AppColors.textDark,
+                              fontWeight: FontWeight.w700,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -81,7 +86,10 @@ class RecruiterOrgProfileCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       "$recruiterName • $recruiterEmail",
-                      style: AppTypography.caption.copyWith(color: AppColors.textMuted),
+                      style: AppTypography.caption.copyWith(
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -89,13 +97,15 @@ class RecruiterOrgProfileCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: AppSpacing.lg),
+          SizedBox(height: AppSpacing.md),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white12),
+              border: Border.all(
+                color: isDark ? Colors.white12 : AppColors.border.withValues(alpha: 0.8),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -107,7 +117,7 @@ class RecruiterOrgProfileCard extends StatelessWidget {
                     Text(
                       "Enterprise Tier Plan",
                       style: AppTypography.caption.copyWith(
-                        color: Colors.white,
+                        color: isDark ? Colors.white : AppColors.textDark,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -115,7 +125,10 @@ class RecruiterOrgProfileCard extends StatelessWidget {
                 ),
                 Text(
                   "Unlimited ATS Sync",
-                  style: AppTypography.caption.copyWith(color: AppColors.success, fontWeight: FontWeight.bold),
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -140,13 +153,23 @@ class RecruiterOrgStatGrid extends StatelessWidget {
     required this.applications,
   });
 
-  Widget _buildTile(String label, String value, IconData icon, Color color) {
+  Widget _buildTile(String label, String value, IconData icon, Color color, bool isDark) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: AppBorderRadius.medium,
-        border: Border.all(color: AppColors.border),
+        color: isDark ? const Color(0xFF131B2E) : Colors.white,
+        borderRadius: AppBorderRadius.large,
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.7),
+          width: 1.1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,16 +178,23 @@ class RecruiterOrgStatGrid extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
+              Text(
+                label,
+                style: AppTypography.caption.copyWith(
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               Icon(icon, color: color, size: 18),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             value,
             style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textLight,
+              fontWeight: FontWeight.w700,
+              fontSize: 17,
+              color: isDark ? Colors.white : AppColors.textDark,
             ),
           ),
         ],
@@ -174,18 +204,20 @@ class RecruiterOrgStatGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      childAspectRatio: 2.0,
+      childAspectRatio: 2.1,
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       children: [
-        _buildTile("Recruiters", "$recruiters Active", Icons.badge_outlined, Colors.indigoAccent),
-        _buildTile("Talent Pool", "$candidates", Icons.people_alt_outlined, Colors.tealAccent),
-        _buildTile("Active Jobs", "$jobs", Icons.work_outline, Colors.amberAccent),
-        _buildTile("Applications", "$applications", Icons.folder_open, Colors.lightGreenAccent),
+        _buildTile("Recruiters", "$recruiters Active", Icons.badge_outlined, Colors.indigoAccent, isDark),
+        _buildTile("Talent Pool", "$candidates", Icons.people_alt_outlined, Colors.teal, isDark),
+        _buildTile("Active Jobs", "$jobs", Icons.work_outline, Colors.amber.shade700, isDark),
+        _buildTile("Applications", "$applications", Icons.folder_open, Colors.green, isDark),
       ],
     );
   }
@@ -207,22 +239,37 @@ class RecruiterTeamMemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: EdgeInsets.only(bottom: AppSpacing.sm),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: AppBorderRadius.small,
-        border: Border.all(color: AppColors.border),
+        color: isDark ? const Color(0xFF131B2E) : Colors.white,
+        borderRadius: AppBorderRadius.medium,
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.7),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: isCurrentUser ? AppColors.success.withValues(alpha: 0.15) : Colors.white12,
+            backgroundColor: isCurrentUser
+                ? AppColors.primary.withValues(alpha: 0.15)
+                : (isDark ? Colors.white12 : Colors.grey.shade100),
             child: Text(
               name.isNotEmpty ? name[0].toUpperCase() : "U",
               style: TextStyle(
-                color: isCurrentUser ? AppColors.success : Colors.white,
+                color: isCurrentUser
+                    ? AppColors.primary
+                    : (isDark ? Colors.white : AppColors.textDark),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -237,7 +284,9 @@ class RecruiterTeamMemberTile extends StatelessWidget {
                     Flexible(
                       child: Text(
                         name,
-                        style: AppTypography.bodyMediumBold,
+                        style: AppTypography.bodyMediumBold.copyWith(
+                          color: isDark ? Colors.white : AppColors.textDark,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -246,13 +295,13 @@ class RecruiterTeamMemberTile extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.success.withValues(alpha: 0.15),
+                          color: AppColors.primary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           "YOU",
                           style: TextStyle(
-                            color: AppColors.success,
+                            color: AppColors.primary,
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                           ),
@@ -261,9 +310,12 @@ class RecruiterTeamMemberTile extends StatelessWidget {
                     ],
                   ],
                 ),
+                const SizedBox(height: 2),
                 Text(
                   email,
-                  style: AppTypography.caption.copyWith(color: AppColors.textMuted),
+                  style: AppTypography.caption.copyWith(
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -272,16 +324,18 @@ class RecruiterTeamMemberTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.white12),
+              border: Border.all(
+                color: isDark ? Colors.white12 : AppColors.border.withValues(alpha: 0.7),
+              ),
             ),
             child: Text(
               role.toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white70,
+              style: TextStyle(
+                color: isDark ? Colors.white70 : const Color(0xFF475569),
                 fontSize: 10,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
