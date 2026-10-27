@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 import 'package:pro_recruit_ai/shared/common_widgets.dart';
 import 'package:pro_recruit_ai/shared/notifications_screen.dart';
+import 'package:pro_recruit_ai/features/recruiter/services/recruiter_unlock_service.dart';
 
 // Extracted Tabs
 import 'package:pro_recruit_ai/features/recruiter/tabs/recruiter_console_tab.dart';
@@ -39,6 +40,20 @@ class RecruiterMasterHub extends StatefulWidget {
 class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
   int _idx = 0;
   final GlobalKey<ScaffoldState> _scafKey = GlobalKey<ScaffoldState>();
+  int _availableCredits = 25;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCredits();
+  }
+
+  Future<void> _loadCredits() async {
+    try {
+      final balance = await RecruiterUnlockService.getRecruiterCredits();
+      if (mounted) setState(() => _availableCredits = balance);
+    } catch (_) {}
+  }
 
   void _navigateToTab(int index) {
     setState(() => _idx = index);
@@ -150,7 +165,51 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: const [NotificationBell()],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const UsageCreditsScreen()),
+                ).then((_) => _loadCredits());
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.bolt, size: 14, color: AppColors.primary),
+                    const SizedBox(width: 3),
+                    ValueListenableBuilder<int?>(
+                      valueListenable: RecruiterUnlockService.creditBalanceNotifier,
+                      builder: (context, credits, _) {
+                        final displayCredits = credits ?? _availableCredits;
+                        return Text(
+                          "$displayCredits Credits",
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          const NotificationBell(),
+          const SizedBox(width: 8),
+        ],
         leading: IconButton(
           icon: Icon(Icons.menu, color: AppColors.primary),
           onPressed: () => _scafKey.currentState!.openDrawer(),

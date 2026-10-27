@@ -225,7 +225,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.success,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
@@ -244,7 +244,8 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 16.0;
+    final statusBarHeight = MediaQueryData.fromView(View.of(context)).padding.top;
+    final topInset = statusBarHeight + kToolbarHeight + 16.0;
 
     return Stack(
         children: [
@@ -267,7 +268,7 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
                   AppSpacing.lg,
                   topInset,
                   AppSpacing.lg,
-                  100,
+                  180,
                 ),
                 children: [
                   RecruiterOfferHeader(
@@ -353,11 +354,11 @@ class _OffersHubTabState extends State<OffersHubTab> with AutomaticKeepAliveClie
           },
         ),
         Positioned(
-          bottom: 24,
+          bottom: 28,
           right: 20,
           child: FloatingActionButton.extended(
             onPressed: _showExtendOfferSheet,
-            backgroundColor: AppColors.success,
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             icon: const Icon(Icons.add_rounded),
             label: const Text("Extend Offer", style: TextStyle(fontWeight: FontWeight.w700)),

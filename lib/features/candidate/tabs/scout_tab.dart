@@ -1,3 +1,4 @@
+import 'package:pro_recruit_ai/shared/widgets/app_empty_state.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pro_recruit_ai/shared/chat_screen.dart';
@@ -407,11 +408,17 @@ class _ScoutTabState extends State<ScoutTab> with AutomaticKeepAliveClientMixin 
               SizedBox(height: AppSpacing.lg),
               if (!_viewingApplications) ...[
                 if (filteredJobs.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(AppSpacing.xxl),
-                      child: Text("No jobs found matching your criteria.", style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
-                    ),
+                  AppEmptyState(
+                    icon: Icons.search_off_rounded,
+                    title: "No Matching Positions",
+                    subtitle: "Try resetting your location or role filters to see more available openings.",
+                    actionLabel: "Clear Filters",
+                    onAction: () {
+                      setState(() {
+                        _selectedLocations.clear();
+                        _selectedWorkModes.clear();
+                      });
+                    },
                   )
                 else
                   ...filteredJobs.asMap().entries.map((entry) {
@@ -448,11 +455,16 @@ class _ScoutTabState extends State<ScoutTab> with AutomaticKeepAliveClientMixin 
                     }
                     final myApps = appSnap.data ?? [];
                     if (myApps.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(AppSpacing.xxl),
-                          child: Text("No active applications yet.", style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
-                        ),
+                      return AppEmptyState(
+                        icon: Icons.send_and_archive_outlined,
+                        title: "No Active Applications",
+                        subtitle: "You haven't applied to any roles yet. Explore the scout feed and submit your first application.",
+                        actionLabel: "Explore Jobs",
+                        onAction: () {
+                          setState(() {
+                            _viewingApplications = false;
+                          });
+                        },
                       );
                     }
                     return Column(

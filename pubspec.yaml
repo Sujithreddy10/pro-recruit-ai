@@ -33,14 +33,19 @@ dependencies:
   url_launcher: ^6.3.1
   sandbox_digilocker_sdk: ^1.0.1
   shared_preferences: ^2.5.5
+  syncfusion_flutter_pdf: ^35.1.41
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^6.0.0
   integration_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
   assets:
     - assets/.env
+    - .env
+dependency_overrides:
+  archive: ^4.5.2

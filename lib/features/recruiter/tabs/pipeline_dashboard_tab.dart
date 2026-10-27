@@ -630,7 +630,8 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
   Widget build(BuildContext context) {
     super.build(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 8.0;
+    final statusBarHeight = MediaQueryData.fromView(View.of(context)).padding.top;
+    final topInset = statusBarHeight + kToolbarHeight + 16.0;
 
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _applicationsFuture,

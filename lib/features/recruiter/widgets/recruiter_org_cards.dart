@@ -29,8 +29,8 @@ class RecruiterOrgProfileCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 3),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -43,8 +43,8 @@ class RecruiterOrgProfileCard extends StatelessWidget {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -80,7 +80,7 @@ class RecruiterOrgProfileCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Icon(Icons.verified, color: Colors.blueAccent, size: 16),
+                        Icon(Icons.verified, color: AppColors.primary, size: 16),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -101,10 +101,10 @@ class RecruiterOrgProfileCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+              color: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isDark ? Colors.white12 : AppColors.border.withValues(alpha: 0.8),
+                color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.8),
               ),
             ),
             child: Row(
@@ -124,7 +124,7 @@ class RecruiterOrgProfileCard extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "Unlimited ATS Sync",
+                  "Active ATS Sync",
                   style: AppTypography.caption.copyWith(
                     color: AppColors.success,
                     fontWeight: FontWeight.bold,
@@ -158,7 +158,7 @@ class RecruiterOrgStatGrid extends StatelessWidget {
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF131B2E) : Colors.white,
-        borderRadius: AppBorderRadius.large,
+        borderRadius: AppBorderRadius.medium,
         border: Border.all(
           color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.7),
           width: 1.1,
@@ -214,10 +214,10 @@ class RecruiterOrgStatGrid extends StatelessWidget {
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       children: [
-        _buildTile("Recruiters", "$recruiters Active", Icons.badge_outlined, Colors.indigoAccent, isDark),
-        _buildTile("Talent Pool", "$candidates", Icons.people_alt_outlined, Colors.teal, isDark),
+        _buildTile("Recruiters", "$recruiters Active", Icons.badge_outlined, AppColors.primary, isDark),
+        _buildTile("Talent Pool", "$candidates", Icons.people_alt_outlined, AppColors.info, isDark),
         _buildTile("Active Jobs", "$jobs", Icons.work_outline, Colors.amber.shade700, isDark),
-        _buildTile("Applications", "$applications", Icons.folder_open, Colors.green, isDark),
+        _buildTile("Applications", "$applications", Icons.folder_open, AppColors.success, isDark),
       ],
     );
   }
@@ -246,7 +246,7 @@ class RecruiterTeamMemberTile extends StatelessWidget {
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF131B2E) : Colors.white,
-        borderRadius: AppBorderRadius.medium,
+        borderRadius: AppBorderRadius.small,
         border: Border.all(
           color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.7),
         ),
@@ -327,7 +327,7 @@ class RecruiterTeamMemberTile extends StatelessWidget {
               color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
-                color: isDark ? Colors.white12 : AppColors.border.withValues(alpha: 0.7),
+                color: isDark ? const Color(0xFF1E293B) : AppColors.border.withValues(alpha: 0.7),
               ),
             ),
             child: Text(

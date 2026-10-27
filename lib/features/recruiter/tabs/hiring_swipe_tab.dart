@@ -1,3 +1,4 @@
+import '../services/recruiter_unlock_service.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -16,6 +17,13 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
   late Future<List<Map<String, dynamic>>> _applicantsFuture;
+  int _availableCredits = 10;
+  final Set<String> _unlockedCandidateIds = {};
+
+  Future<void> _loadRecruiterCredits() async {
+    final creds = await RecruiterUnlockService.getRecruiterCredits();
+    if (mounted) setState(() => _availableCredits = creds);
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -23,6 +31,7 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
   @override
   void initState() {
     super.initState();
+    _loadRecruiterCredits();
     _applicantsFuture = _fetchApplicants();
   }
 
@@ -39,6 +48,178 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
         .eq('status', 'applied')
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(data);
+  }
+
+    Future<void> _handleResumeTap({
+    required String candidateId,
+    required String candidateName,
+    required String? resumePath,
+  }) async {
+    if (resumePath == null || resumePath.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No resume uploaded by this candidate.")),
+        );
+      }
+      return;
+    }
+
+    if (_unlockedCandidateIds.contains(candidateId)) {
+      _viewResume(resumePath);
+      return;
+    }
+
+    final isAlreadyUnlocked = await RecruiterUnlockService.isCandidateUnlocked(candidateId);
+    if (isAlreadyUnlocked) {
+      _unlockedCandidateIds.add(candidateId);
+      _viewResume(resumePath);
+      return;
+    }
+
+    if (!mounted) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF131B2E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(
+            color: isDark ? const Color(0xFF1E293B) : AppColors.border,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                  child: Text(
+                    candidateName.isNotEmpty ? candidateName[0].toUpperCase() : '?',
+                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Unlock Full Profile",
+                        style: AppTypography.titleMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : AppColors.textDark,
+                        ),
+                      ),
+                      Text(
+                        candidateName,
+                        style: AppTypography.caption.copyWith(
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    "$_availableCredits Credits",
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0A0E1A) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  _buildUnlockPerkRow(Icons.description_outlined, "Verified Resume PDF download & preview", isDark),
+                  const SizedBox(height: 8),
+                  _buildUnlockPerkRow(Icons.phone_outlined, "Direct phone, email & WhatsApp access", isDark),
+                  const SizedBox(height: 8),
+                  _buildUnlockPerkRow(Icons.verified_outlined, "Trust ID skill benchmark score", isDark),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  final success = await RecruiterUnlockService.unlockCandidate(candidateId);
+                  if (success) {
+                    setState(() {
+                      _unlockedCandidateIds.add(candidateId);
+                      if (_availableCredits > 0) _availableCredits--;
+                    });
+                    _viewResume(resumePath);
+                  }
+                },
+                child: const Text(
+                  "Unlock Candidate (1 Sourcing Credit)",
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnlockPerkRow(IconData icon, String label, bool isDark) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: AppColors.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _viewResume(String? resumePath) async {
@@ -81,19 +262,40 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
           })
           .eq('id', applicationId);
 
+      setState(() {
+        _applicantsFuture = _fetchApplicants();
+      });
+
       if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(approved ? "Candidate moved to Shortlist" : "Candidate Archived"),
           backgroundColor: approved ? AppColors.success : AppColors.error,
-          duration: const Duration(milliseconds: 1200),
+          duration: const Duration(milliseconds: 3500),
           behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: "Undo",
+            textColor: Colors.white,
+            onPressed: () async {
+              try {
+                await Supabase.instance.client
+                    .from('applications')
+                    .update({
+                      'status': 'applied',
+                      'status_updated_at': DateTime.now().toIso8601String(),
+                    })
+                    .eq('id', applicationId);
+                if (mounted) {
+                  setState(() {
+                    _applicantsFuture = _fetchApplicants();
+                  });
+                }
+              } catch (_) {}
+            },
+          ),
         ),
       );
-
-      setState(() {
-        _applicantsFuture = _fetchApplicants();
-      });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -250,6 +452,7 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
     final role = app['job_title'] ?? 'Role not specified';
     final date = (app['created_at'] ?? '').toString().split('T').first;
     final resumePath = app['profiles']?['resume_path'] as String?;
+    final candidateId = (app['candidate_id'] ?? app['user_id'] ?? app['profile_id'] ?? app['id']).toString();
     final matchScore = app['match_score'] ?? app['ai_score'] ?? 88;
 
     return Container(
@@ -349,7 +552,7 @@ class _HiringSwipeTabState extends State<HiringSwipeTab> with AutomaticKeepAlive
                 const Spacer(),
                 if (resumePath != null && resumePath.isNotEmpty)
                   TextButton.icon(
-                    onPressed: () => _viewResume(resumePath),
+                    onPressed: () => _handleResumeTap(candidateId: candidateId, candidateName: name, resumePath: resumePath),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       visualDensity: VisualDensity.compact,

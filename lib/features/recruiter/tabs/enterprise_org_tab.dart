@@ -1,3 +1,4 @@
+import 'package:pro_recruit_ai/shared/widgets/app_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pro_recruit_ai/features/recruiter/widgets/recruiter_org_cards.dart';
@@ -356,13 +357,26 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final topPadding = MediaQuery.of(context).padding.top + 16.0;
+    final statusBarHeight = MediaQueryData.fromView(View.of(context)).padding.top;
+    final topPadding = statusBarHeight + kToolbarHeight + 16.0;
 
     return FutureBuilder<Map<String, dynamic>>(
       future: _orgDataFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Padding(
+            padding: EdgeInsets.fromLTRB(AppSpacing.lg, topPadding, AppSpacing.lg, 140),
+            child: ListView(
+              physics: const NeverScrollableScrollPhysics(),
+              children: const [
+                RecruiterCardSkeleton(),
+                SizedBox(height: 8),
+                RecruiterCardSkeleton(),
+                SizedBox(height: 8),
+                RecruiterCardSkeleton(),
+              ],
+            ),
+          );
         }
 
         final data = snapshot.data ?? {};
@@ -384,7 +398,7 @@ class _EnterpriseOrgTabState extends State<EnterpriseOrgTab>
             setState(() => _loadOrgData());
           },
           child: ListView(
-            padding: EdgeInsets.fromLTRB(AppSpacing.lg, topPadding, AppSpacing.lg, 100),
+            padding: EdgeInsets.fromLTRB(AppSpacing.lg, topPadding, AppSpacing.lg, 140),
             children: [
               RecruiterOrgProfileCard(
                 companyName: companyName,

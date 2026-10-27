@@ -146,16 +146,46 @@ class _GrowthTabState extends State<GrowthTab> with AutomaticKeepAliveClientMixi
                         ),
                       )
                     else if (offers.isEmpty)
-                      Text(
-                        "No offers yet, keep applying.",
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted),
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: AppSpacing.xl, horizontal: AppSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF131B2E)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: AppBorderRadius.medium,
+                          border: Border.all(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white10
+                                : AppColors.border,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(Icons.workspace_premium_outlined, size: 36, color: AppColors.textMuted),
+                            const SizedBox(height: 10),
+                            Text(
+                              "No Active Offers Yet",
+                              style: AppTypography.bodyMediumBold,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "When recruiters extend job offers, they will appear here with compensation breakdowns.",
+                              textAlign: TextAlign.center,
+                              style: AppTypography.caption.copyWith(color: AppColors.textMuted),
+                            ),
+                          ],
+                        ),
                       )
                     else
                       ...offers.map((o) => CandidateOfferCard(
-                            role: o['job_title'] ?? 'N/A',
-                            company: o['company_name'] ?? 'N/A',
-                            isHired: o['status'] == 'hired',
-                            appliedOn: o['created_at']?.toString().split('T').first ?? 'Unknown',
+                            applicationId: o['id']?.toString() ?? '',
+                            role: o['job_title'] ?? (o['role'] ?? 'Software Engineer'),
+                            company: o['company_name'] ?? 'Enterprise Partner',
+                            status: o['status'] ?? 'offer_sent',
+                            ctc: o['ctc'] ?? (o['salary'] ?? ''),
+                            appliedOn: o['created_at']?.toString().split('T').first ?? 'Recent',
+                            onStatusChanged: () => setState(() { _offersFuture = _fetchMyOffers(); }),
                           )),
                   ],
                 ),

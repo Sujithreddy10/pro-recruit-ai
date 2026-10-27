@@ -35,9 +35,9 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
     final res = await Supabase.instance.client
         .from('candidate_resumes')
         .select()
-        .eq('user_id', userId)
+        .eq('candidate_id', userId)
         .order('is_primary', ascending: false)
-        .order('uploaded_at', ascending: false);
+        .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(res);
   }
 
@@ -69,7 +69,7 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
 
       final isFirst = resumes.isEmpty;
       await Supabase.instance.client.from('candidate_resumes').insert({
-        'user_id': userId,
+        'candidate_id': userId,
         'label': fileName.replaceAll(RegExp(r'\.pdf$', caseSensitive: false), ''),
         'file_name': fileName,
         'storage_path': storagePath,
@@ -101,7 +101,7 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
     try {
-      await Supabase.instance.client.from('candidate_resumes').update({'is_primary': false}).eq('user_id', userId);
+      await Supabase.instance.client.from('candidate_resumes').update({'is_primary': false}).eq('candidate_id', userId);
       await Supabase.instance.client.from('candidate_resumes').update({'is_primary': true}).eq('id', resume['id']);
       await Supabase.instance.client.from('profiles').update({'resume_path': resume['storage_path']}).eq('id', userId);
       _reload();
@@ -160,6 +160,9 @@ class _ResumeVaultScreenState extends State<ResumeVaultScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            debugPrint("ResumeVault Fetch Error: ${snapshot.error}");
           }
           final resumes = snapshot.data ?? [];
           final atLimit = resumes.length >= _maxResumes;

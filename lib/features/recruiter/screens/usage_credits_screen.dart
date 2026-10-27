@@ -30,22 +30,25 @@ class _UsageCreditsScreenState extends State<UsageCreditsScreen> {
   }
 
   Future<Map<String, dynamic>> _fetchUsageData() async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final client = Supabase.instance.client;
+    final userId = client.auth.currentUser?.id;
     if (userId == null) {
-      return {'tier': 'free', 'total': 0, 'byFeature': <String, int>{}};
+      return {'availableCredits': 0, 'tier': 'enterprise', 'total': 0, 'byFeature': <String, int>{}};
     }
 
-    final profile = await Supabase.instance.client
+    final profile = await client
         .from('profiles')
-        .select('subscription_tier')
+        .select('subscription_tier, credits')
         .eq('id', userId)
         .maybeSingle();
-    final tier = profile?['subscription_tier'] as String? ?? 'free';
+
+    final tier = profile?['subscription_tier'] as String? ?? 'enterprise';
+    final availableCredits = (profile?['credits'] as int?) ?? 0;
 
     final now = DateTime.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
 
-    final logs = await Supabase.instance.client
+    final logs = await client
         .from('ai_usage_log')
         .select('feature')
         .eq('user_id', userId)
@@ -58,7 +61,12 @@ class _UsageCreditsScreenState extends State<UsageCreditsScreen> {
       byFeature[f] = (byFeature[f] ?? 0) + 1;
     }
 
-    return {'tier': tier, 'total': rows.length, 'byFeature': byFeature};
+    return {
+      'availableCredits': availableCredits,
+      'tier': tier,
+      'total': rows.length,
+      'byFeature': byFeature,
+    };
   }
 
   @override
