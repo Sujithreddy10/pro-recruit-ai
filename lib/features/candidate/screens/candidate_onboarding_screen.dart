@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../../core/services/resume_parser_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -50,7 +51,7 @@ class _CandidateOnboardingScreenState extends State<CandidateOnboardingScreen> {
       allowedExtensions: ['pdf'],
       withData: true,
     );
-    if (result == null) return;
+    if (result == null || result.files.single.path == null) return;
 
     final file = File(result.files.single.path!);
     final fileName = result.files.single.name;
@@ -58,13 +59,32 @@ class _CandidateOnboardingScreenState extends State<CandidateOnboardingScreen> {
 
     setState(() => _isUploading = true);
     try {
+      // 1. On-device text, phone, and skill extraction (0 cost)
+      final parsed = await ResumeParserService.parseLocalResume(file);
+      final cleanText = parsed['clean_text'] as String? ?? '';
+      final detectedSkills = (parsed['detected_skills'] as List<String>? ?? []).join(', ');
+      final extractedPhone = parsed['extracted_phone'] as String?;
+
+      // 2. Upload file to Supabase storage
       await Supabase.instance.client.storage
           .from('resumes')
           .upload(storagePath, file, fileOptions: const FileOptions(upsert: true));
 
+      // 3. Update profiles table with parsed fields and storage path
+      final updateData = <String, dynamic>{
+        'resume_path': storagePath,
+        'resume_text': cleanText,
+        'role': detectedSkills.isNotEmpty ? detectedSkills : 'Fresher',
+        'onboarding_completed': true,
+      };
+      if (extractedPhone != null && extractedPhone.isNotEmpty) {
+        updateData['phone'] = extractedPhone;
+      }
+
       await Supabase.instance.client
           .from('profiles')
-          .update({'resume_path': storagePath}).eq('id', userId);
+          .update(updateData)
+          .eq('id', userId);
 
       if (mounted) {
         setState(() {

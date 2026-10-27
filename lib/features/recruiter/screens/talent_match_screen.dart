@@ -30,6 +30,7 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
   List<Map<String, dynamic>>? _searchResults;
   int _availableCredits = 10;
   final Set<String> _unlockedCandidateIds = {};
+  int _selectedFilterIndex = 0; // 0: All Matches, 1: Unlocked
 
   Future<void> _loadRecruiterCredits() async {
     final creds = await RecruiterUnlockService.getRecruiterCredits();
@@ -467,6 +468,109 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
               ),
             ),
           ),
+          if (_searchResults == null)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF131B2E) : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _selectedFilterIndex = 0),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: _selectedFilterIndex == 0
+                                ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: _selectedFilterIndex == 0
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              "All Matches",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: _selectedFilterIndex == 0 ? FontWeight.w700 : FontWeight.w500,
+                                color: _selectedFilterIndex == 0
+                                    ? (isDark ? Colors.white : AppColors.textDark)
+                                    : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _selectedFilterIndex = 1),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: _selectedFilterIndex == 1
+                                ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: _selectedFilterIndex == 1
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.lock_open_rounded,
+                                size: 14,
+                                color: _selectedFilterIndex == 1
+                                    ? AppColors.primary
+                                    : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                "Unlocked (${_unlockedCandidateIds.length})",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: _selectedFilterIndex == 1 ? FontWeight.w700 : FontWeight.w500,
+                                  color: _selectedFilterIndex == 1
+                                      ? (isDark ? Colors.white : AppColors.textDark)
+                                      : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          const SizedBox(height: 4),
           Expanded(
             child: _isSearching
                 ? const Center(child: CircularProgressIndicator())
@@ -486,8 +590,48 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
               ),
             );
           }
-          final matches = snapshot.data ?? [];
+          var matches = snapshot.data ?? [];
+          if (_selectedFilterIndex == 1) {
+            matches = matches.where((m) {
+              final cId = m['profiles']?['id']?.toString() ?? '';
+              return _unlockedCandidateIds.contains(cId);
+            }).toList();
+          }
+
           if (matches.isEmpty) {
+            if (_selectedFilterIndex == 1) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.contacts_outlined,
+                        size: 48,
+                        color: isDark ? const Color(0xFF475569) : const Color(0xFF94A3B8),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        "No unlocked candidates yet",
+                        style: AppTypography.titleMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : AppColors.textDark,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Unlock candidate profiles using your credits to access their direct phone, WhatsApp, and email contacts here.",
+                        textAlign: TextAlign.center,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
             return Center(
               child: Text(
                 "No candidate matches found yet.",
