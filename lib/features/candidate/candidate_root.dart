@@ -15,6 +15,7 @@ import 'package:pro_recruit_ai/features/candidate/tabs/scout_tab.dart';
 import 'package:pro_recruit_ai/features/candidate/tabs/trust_id_tab.dart';
 import 'package:pro_recruit_ai/shared/app_design_system.dart';
 import 'package:pro_recruit_ai/shared/common_widgets.dart';
+import 'package:pro_recruit_ai/shared/notifications_screen.dart';
 
 class CandidateRoot extends StatefulWidget {
   const CandidateRoot({super.key});
@@ -62,6 +63,18 @@ class _MainNavigationState extends State<MainNavigation> {
           icon: Icon(Icons.menu, color: AppColors.primary),
           onPressed: () => _scaffoldKey.currentState!.openDrawer(),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_outlined, color: AppColors.primary),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: AnimatedBackgroundWrapper(
         child: IndexedStack(
