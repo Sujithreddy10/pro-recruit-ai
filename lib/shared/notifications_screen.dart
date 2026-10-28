@@ -153,30 +153,59 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               final wasUnread = n['read_at'] == null;
               return Container(
                 margin: EdgeInsets.only(bottom: AppSpacing.sm),
-                padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: wasUnread ? AppColors.primary.withValues(alpha: 0.06) : AppColors.surface,
                   borderRadius: AppBorderRadius.medium,
                   border: Border.all(color: AppColors.border),
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(_iconForType(n['type']), color: AppColors.primary, size: 20),
-                    SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: AppBorderRadius.medium,
+                  child: InkWell(
+                    borderRadius: AppBorderRadius.medium,
+                    onTap: () {
+                      final type = n['type']?.toString() ?? '';
+                      final title = (n['title']?.toString() ?? '').toLowerCase();
+                      final body = (n['body']?.toString() ?? '').toLowerCase();
+
+                      // Dismiss notifications screen
+                      Navigator.pop(context);
+
+                      if (type == 'application_status' || title.contains('offer') || body.contains('offer') || body.contains('hired')) {
+                        // User is returned to the dashboard where Offers & Growth are directly visible
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Opened: ${n['title']}"),
+                            backgroundColor: AppColors.primary,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(n['title'] ?? '', style: AppTypography.bodyMediumBold),
-                          SizedBox(height: 2),
-                          Text(n['body'] ?? '', style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
-                          SizedBox(height: 4),
-                          Text(_timeAgo(createdAt), style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
+                          Icon(_iconForType(n['type']), color: AppColors.primary, size: 20),
+                          SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(n['title'] ?? '', style: AppTypography.bodyMediumBold),
+                                const SizedBox(height: 2),
+                                Text(n['body'] ?? '', style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted)),
+                                const SizedBox(height: 4),
+                                Text(_timeAgo(createdAt), style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted.withValues(alpha: 0.5)),
                         ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               );
             },
