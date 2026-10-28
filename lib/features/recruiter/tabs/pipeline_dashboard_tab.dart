@@ -89,6 +89,32 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
     }
   }
 
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    if (cleanNumber.isEmpty) return;
+    final uri = Uri.parse('tel:$cleanNumber');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  Future<void> _launchWhatsApp({
+    required String phoneNumber,
+    required String candidateName,
+    required String jobTitle,
+  }) async {
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
+    if (cleanNumber.isEmpty) return;
+    final message = Uri.encodeComponent(
+      "Hi $candidateName, I reviewed your profile for the $jobTitle role on Hylo. "
+      "Are you free for a quick 5-minute introductory call today?",
+    );
+    final uri = Uri.parse("https://wa.me/$cleanNumber?text=$message");
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   void _showCandidateDetailSheet(Map<String, dynamic> item) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final name = item['profiles']?['full_name'] ?? 'Candidate #${item['id']}';
@@ -235,6 +261,56 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                       ],
                     ),
                   ),
+                ),
+                SizedBox(height: AppSpacing.lg),
+                Text(
+                  "DIRECT REACH & ENGAGEMENT",
+                  style: AppTypography.sectionHeader.copyWith(
+                    color: isDark ? AppColors.textLight : AppColors.textDark,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Builder(
+                  builder: (context) {
+                    final phone = (item['profiles']?['phone'] ?? item['phone'] ?? '+919876543210').toString();
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _launchWhatsApp(
+                              phoneNumber: phone,
+                              candidateName: name,
+                              jobTitle: job,
+                            ),
+                            icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                            label: const Text("WhatsApp", style: TextStyle(fontWeight: FontWeight.w700)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _makePhoneCall(phone),
+                            icon: const Icon(Icons.phone_in_talk_outlined, size: 18),
+                            label: const Text("Direct Call", style: TextStyle(fontWeight: FontWeight.w700)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 SizedBox(height: AppSpacing.lg),
                 Text(
