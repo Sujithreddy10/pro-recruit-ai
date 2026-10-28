@@ -38,10 +38,42 @@ class _CandidateOfferCardState extends State<CandidateOfferCard> {
     final nav = Navigator.of(ctx);
 
     try {
-      await Supabase.instance.client
+      final supa = Supabase.instance.client;
+      await supa
           .from('applications')
           .update({'status': newStatus})
           .eq('id', widget.applicationId);
+
+      // Notify the recruiter about the candidate's decision
+      try {
+        final appData = await supa
+            .from('applications')
+            .select('job_id, candidate_name, jobs(posted_by, title)')
+            .eq('id', widget.applicationId)
+            .maybeSingle();
+
+        if (appData != null) {
+          final job = appData['jobs'] as Map<String, dynamic>?;
+          final recruiterId = job?['posted_by']?.toString();
+          final candidateName = appData['candidate_name'] ?? 'A candidate';
+          final jobTitle = job?['title'] ?? widget.role;
+
+          if (recruiterId != null && recruiterId.isNotEmpty) {
+            final isAccepted = newStatus == 'hired';
+            await supa.from('notifications').insert({
+              'user_id': recruiterId,
+              'title': isAccepted ? "🎉 Offer Accepted!" : "Offer Declined",
+              'body': isAccepted
+                  ? "$candidateName accepted the offer for $jobTitle!"
+                  : "$candidateName declined the offer for $jobTitle.",
+              'type': 'application_status',
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          }
+        }
+      } catch (_) {
+        // Fail-safe: update succeeds even if notification insert fails
+      }
 
       if (!mounted) return;
       nav.pop();
