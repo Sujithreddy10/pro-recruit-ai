@@ -161,15 +161,13 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
     return Scaffold(
       key: _scafKey,
       drawer: _buildMasterDrawer(),
-      extendBodyBehindAppBar: true,
+      extendBodyBehindAppBar: false,
       appBar: AppBar(
-        backgroundColor: (Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF0F172A)
-                : const Color(0xFFF8FAFC))
-            .withValues(alpha: 0.85),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFFEBF3FE),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 2,
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
