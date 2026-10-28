@@ -67,12 +67,47 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
     }
   }
 
-  Future<void> _updateStatus(int id, String newStatus, {bool closeParent = true}) async {
+  Future<void> _updateStatus(
+    int id,
+    String newStatus, {
+    bool closeParent = true,
+    String? candidateUserId,
+    String? jobTitle,
+  }) async {
     try {
       await Supabase.instance.client
           .from('applications')
           .update({'status': newStatus, 'status_updated_at': DateTime.now().toIso8601String()})
           .eq('id', id);
+
+      // Trigger candidate notification
+      if (candidateUserId != null && candidateUserId.isNotEmpty) {
+        String title = "Application Update";
+        String body = "Your application status has been updated to ${newStatus.replaceAll('_', ' ')}.";
+
+        if (newStatus == 'shortlisted') {
+          title = "Shortlisted! 🎉";
+          body = "Great news! You have been shortlisted for the ${jobTitle ?? 'requested'} role.";
+        } else if (newStatus == 'offer_sent') {
+          title = "Offer Extended! 🚀";
+          body = "Congratulations! An offer has been extended for the ${jobTitle ?? 'requested'} position.";
+        } else if (newStatus == 'rejected') {
+          title = "Application Update";
+          body = "Your application for ${jobTitle ?? 'the role'} has been archived.";
+        }
+
+        try {
+          await Supabase.instance.client.from('notifications').insert({
+            'user_id': candidateUserId,
+            'title': title,
+            'body': body,
+            'type': 'application_status',
+            'created_at': DateTime.now().toIso8601String(),
+          });
+        } catch (_) {
+          // Non-blocking notification fail-safe
+        }
+      }
 
       if (mounted) {
         if (closeParent) Navigator.pop(context);
@@ -346,7 +381,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                         child: ElevatedButton(
                           onPressed: () {
                             Navigator.pop(ctx);
-                            _updateStatus(item['id'], 'shortlisted', closeParent: false);
+                            _updateStatus(item['id'], 'shortlisted', closeParent: false, candidateUserId: item['user_id']?.toString(), jobTitle: job);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
@@ -362,7 +397,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                         child: ElevatedButton(
                           onPressed: () {
                             Navigator.pop(ctx);
-                            _updateStatus(item['id'], 'offer_sent', closeParent: false);
+                            _updateStatus(item['id'], 'offer_sent', closeParent: false, candidateUserId: item['user_id']?.toString(), jobTitle: job);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.success,
@@ -378,7 +413,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                         child: OutlinedButton(
                           onPressed: () {
                             Navigator.pop(ctx);
-                            _updateStatus(item['id'], 'rejected', closeParent: false);
+                            _updateStatus(item['id'], 'rejected', closeParent: false, candidateUserId: item['user_id']?.toString(), jobTitle: job);
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFFF87171),
