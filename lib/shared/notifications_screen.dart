@@ -51,7 +51,8 @@ class NotificationBell extends StatelessWidget {
 }
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+  final VoidCallback? onSelectOffer;
+  const NotificationsScreen({super.key, this.onSelectOffer});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -171,8 +172,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       // Dismiss notifications screen
                       Navigator.pop(context);
 
-                      if (type == 'application_status' || title.contains('offer') || body.contains('offer') || body.contains('hired')) {
-                        // User is returned to the dashboard where Offers & Growth are directly visible
+                      if (title.contains('offer') || body.contains('offer') || body.contains('hired')) {
+                        widget.onSelectOffer?.call();
+                      } else if (type == 'application_status') {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text("Opened: ${n['title']}"),

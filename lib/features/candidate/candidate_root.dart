@@ -69,7 +69,13 @@ class _MainNavigationState extends State<MainNavigation> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                MaterialPageRoute(
+                  builder: (_) => NotificationsScreen(
+                    onSelectOffer: () {
+                      setState(() => _idx = 4);
+                    },
+                  ),
+                ),
               );
             },
           ),
