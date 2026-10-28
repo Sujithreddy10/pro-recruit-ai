@@ -1271,6 +1271,9 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
       final success = await RecruiterUnlockService.addCredits(creditAmount);
       if (mounted) {
         if (success) {
+          setState(() {
+            _availableCredits += creditAmount;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("Success! Added $creditAmount credits to your balance."),
