@@ -1214,11 +1214,33 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildPricingCard("Quick Sourcing Pass", "10 Credits", "₹799", "Instant resume views & verified direct contact", isDark),
+            _buildPricingCard(
+              "Quick Sourcing Pass",
+              "10 Credits",
+              "₹799",
+              "Instant resume views & verified direct contact",
+              isDark,
+              onTap: () => _purchaseCreditsPack(ctx, 10, "Quick Sourcing Pass", "₹799"),
+            ),
             const SizedBox(height: 10),
-            _buildPricingCard("Standard Growth Pack", "25 Credits", "₹1,799", "Best for fast-moving seed and Series-A rounds", isDark, isPopular: true),
+            _buildPricingCard(
+              "Standard Growth Pack",
+              "25 Credits",
+              "₹1,799",
+              "Best for fast-moving seed and Series-A rounds",
+              isDark,
+              isPopular: true,
+              onTap: () => _purchaseCreditsPack(ctx, 25, "Standard Growth Pack", "₹1,799"),
+            ),
             const SizedBox(height: 10),
-            _buildPricingCard("Direct Outreach Pack", "60 Credits", "₹3,999", "Full access to candidates with Trust ID badges", isDark),
+            _buildPricingCard(
+              "Direct Outreach Pack",
+              "60 Credits",
+              "₹3,999",
+              "Full access to candidates with Trust ID badges",
+              isDark,
+              onTap: () => _purchaseCreditsPack(ctx, 60, "Direct Outreach Pack", "₹3,999"),
+            ),
             const SizedBox(height: 20),
           ],
         ),
@@ -1226,8 +1248,58 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
     );
   }
 
-  Widget _buildPricingCard(String title, String credits, String price, String subtitle, bool isDark, {bool isPopular = false}) {
-    return Container(
+  Future<void> _purchaseCreditsPack(BuildContext bottomSheetCtx, int creditAmount, String packName, String price) async {
+    Navigator.pop(bottomSheetCtx);
+    
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text("Confirm Purchase"),
+        content: Text("Add $creditAmount sourcing credits ($packName) for $price?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(c, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            child: const Text("Confirm & Top Up"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final success = await RecruiterUnlockService.addCredits(creditAmount);
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Success! Added $creditAmount credits to your balance."),
+              backgroundColor: const Color(0xFF10B981),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Failed to top up credits. Please try again.")),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildPricingCard(
+    String title, 
+    String credits, 
+    String price, 
+    String subtitle, 
+    bool isDark, 
+    {bool isPopular = false, VoidCallback? onTap}
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isPopular 
@@ -1306,6 +1378,8 @@ class _TalentMatchScreenState extends State<TalentMatchScreen> {
           ),
         ],
       ),
+    ),
+    ),
     );
   }
 

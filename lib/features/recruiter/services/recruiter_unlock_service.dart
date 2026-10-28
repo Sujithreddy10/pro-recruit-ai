@@ -86,4 +86,26 @@ class RecruiterUnlockService {
       return false;
     }
   }
+
+  /// Top up recruiter credits (e.g., after purchasing a pack)
+  static Future<bool> addCredits(int amount) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return false;
+
+    try {
+      final currentCredits = await getRecruiterCredits();
+      final updatedCredits = currentCredits + amount;
+
+      await _client
+          .from('profiles')
+          .update({'credits': updatedCredits})
+          .eq('id', user.id);
+
+      creditBalanceNotifier.value = updatedCredits;
+      return true;
+    } catch (e) {
+      debugPrint("Error adding recruiter credits: $e");
+      return false;
+    }
+  }
 }
