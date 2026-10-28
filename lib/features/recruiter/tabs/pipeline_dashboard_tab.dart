@@ -36,7 +36,7 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
   Future<List<Map<String, dynamic>>> _fetchApplications() async {
     final data = await Supabase.instance.client
         .from('applications')
-        .select('*, profiles(full_name, resume_path)')
+        .select('*, profiles(full_name, phone, resume_path)')
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(data);
   }
@@ -272,16 +272,27 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                 SizedBox(height: AppSpacing.xs),
                 Builder(
                   builder: (context) {
-                    final phone = (item['profiles']?['phone'] ?? item['phone'] ?? '+919876543210').toString();
+                    final rawPhone = item['profiles']?['phone'] ?? item['phone'];
+                    final phone = (rawPhone != null && rawPhone.toString().trim().isNotEmpty)
+                        ? rawPhone.toString().trim()
+                        : null;
                     return Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () => _launchWhatsApp(
-                              phoneNumber: phone,
-                              candidateName: name,
-                              jobTitle: job,
-                            ),
+                            onPressed: () {
+                              if (phone == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Candidate has not provided a phone number.")),
+                                );
+                                return;
+                              }
+                              _launchWhatsApp(
+                                phoneNumber: phone,
+                                candidateName: name,
+                                jobTitle: job,
+                              );
+                            },
                             icon: const Icon(Icons.chat_bubble_outline, size: 18),
                             label: const Text("WhatsApp", style: TextStyle(fontWeight: FontWeight.w700)),
                             style: ElevatedButton.styleFrom(
@@ -296,7 +307,15 @@ class _PipelineDashboardTabState extends State<PipelineDashboardTab>
                         const SizedBox(width: 10),
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () => _makePhoneCall(phone),
+                            onPressed: () {
+                              if (phone == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Candidate has not provided a phone number.")),
+                                );
+                                return;
+                              }
+                              _makePhoneCall(phone);
+                            },
                             icon: const Icon(Icons.phone_in_talk_outlined, size: 18),
                             label: const Text("Direct Call", style: TextStyle(fontWeight: FontWeight.w700)),
                             style: ElevatedButton.styleFrom(
