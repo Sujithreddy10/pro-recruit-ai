@@ -59,7 +59,16 @@ class ProfileModals {
             ),
             TextField(controller: workStatusCtrl, decoration: const InputDecoration(labelText: "Work Status")),
             TextField(controller: cityCtrl, decoration: const InputDecoration(labelText: "Current City")),
-            TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: "Mobile Number")),
+            TextField(
+              controller: phoneCtrl,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                labelText: "Mobile Number (for WhatsApp / Calls)",
+                prefixText: "+91 ",
+                hintText: "9876543210",
+                helperText: "Recruiters use this for direct interview outreach",
+              ),
+            ),
             TextField(controller: availabilityCtrl, decoration: const InputDecoration(labelText: "Availability to Join")),
           ]),
         ),
@@ -74,7 +83,13 @@ class ProfileModals {
       return {
         'work_status': workStatusCtrl.text.trim(),
         'city': cityCtrl.text.trim(),
-        'phone': phoneCtrl.text.trim(),
+        'phone': () {
+          var p = phoneCtrl.text.replaceAll(RegExp(r'[^0-9]'), '');
+          if (p.length > 10 && p.startsWith('91')) {
+            p = p.substring(2);
+          }
+          return p;
+        }(),
         'availability': availabilityCtrl.text.trim(),
       };
     }

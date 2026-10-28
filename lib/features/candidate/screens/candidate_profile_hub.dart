@@ -689,6 +689,60 @@ class _CandidateProfileHubState extends State<CandidateProfileHub> {
               ),
               SizedBox(height: AppSpacing.xl),
 
+              // --- MISSING CONTACT ALERT BANNER ---
+              if ((data['phone'] ?? '').toString().trim().isEmpty) ...[
+                Container(
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7), // Amber 100
+                    borderRadius: AppBorderRadius.medium,
+                    border: Border.all(color: const Color(0xFFF59E0B)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.phone_missed_rounded, color: Color(0xFFB45309), size: 24),
+                      SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Mobile & WhatsApp Not Set",
+                              style: AppTypography.titleMedium.copyWith(
+                                color: const Color(0xFF92400E),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              "Recruiters can't reach out for direct interviews without a verified phone number.",
+                              style: AppTypography.bodySmall.copyWith(
+                                color: const Color(0xFF78350F),
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: const Color(0xFFF59E0B),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        ),
+                        onPressed: () => _editBasicDetails(data),
+                        child: const Text("Add Now", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: AppSpacing.lg),
+              ],
+
               // --- BASIC DETAILS ---
               ProfileSectionHeaderRow(
                 title: "BASIC DETAILS",
