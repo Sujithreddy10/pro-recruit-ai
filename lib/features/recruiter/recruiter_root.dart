@@ -163,8 +163,13 @@ class _RecruiterMasterHubState extends State<RecruiterMasterHub> {
       drawer: _buildMasterDrawer(),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: (Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF0F172A)
+                : const Color(0xFFF8FAFC))
+            .withValues(alpha: 0.85),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 2,
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
